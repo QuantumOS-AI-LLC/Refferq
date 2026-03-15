@@ -21,7 +21,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  IndianRupee,
   Clock,
   CheckCircle2,
   Ban,
@@ -31,6 +30,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL } from '@/lib/currency-format';
 
 interface Payout {
   id: string;
@@ -46,7 +46,7 @@ export default function PayoutsPage() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
 
   useEffect(() => {
     if (!authLoading && user) fetchPayouts();
@@ -64,7 +64,7 @@ export default function PayoutsPage() {
       if (payData.success) setPayouts(payData.payouts || []);
       if (profileData.success) {
         setBalance(profileData.affiliate?.balanceCents || 0);
-        setCurrencySymbol(profileData.currencySymbol || '₹');
+        setCurrencySymbol(profileData.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -90,7 +90,7 @@ export default function PayoutsPage() {
     const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
     return (
       <Badge variant={variant} className="gap-1 text-xs">
-        <Icon className="h-3 w-3" />
+        <Icon className="w-3 h-3" />
         {status}
       </Badge>
     );
@@ -119,8 +119,8 @@ export default function PayoutsPage() {
   if (authLoading || loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
         </div>
         <Skeleton className="h-96" />
@@ -130,30 +130,30 @@ export default function PayoutsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Payouts</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Payouts</h1>
           <p className="text-muted-foreground">Track your earnings and payout history</p>
         </div>
         {payouts.length > 0 && (
           <Button variant="outline" onClick={exportCSV} className="gap-1.5">
-            <Download className="h-4 w-4" />
+            <Download className="w-4 h-4" />
             Export
           </Button>
         )}
       </div>
 
       {/* Earnings Summary */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <span className="text-sm font-bold text-emerald-600">{currencySymbol}</span>
+              <div className="flex justify-center items-center bg-emerald-500/10 rounded-lg w-10 h-10">
+                <span className="font-bold text-emerald-600 text-sm">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
-                <p className="text-xs text-muted-foreground">Current Balance</p>
+                <p className="font-bold text-2xl">{formatCurrency(balance)}</p>
+                <p className="text-muted-foreground text-xs">Current Balance</p>
               </div>
             </div>
           </CardContent>
@@ -161,12 +161,12 @@ export default function PayoutsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+              <div className="flex justify-center items-center bg-blue-500/10 rounded-lg w-10 h-10">
+                <CheckCircle2 className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalPaid)}</p>
-                <p className="text-xs text-muted-foreground">Total Paid</p>
+                <p className="font-bold text-blue-600 text-2xl">{formatCurrency(totalPaid)}</p>
+                <p className="text-muted-foreground text-xs">Total Paid</p>
               </div>
             </div>
           </CardContent>
@@ -174,12 +174,12 @@ export default function PayoutsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <Clock className="h-4 w-4 text-amber-600" />
+              <div className="flex justify-center items-center bg-amber-500/10 rounded-lg w-10 h-10">
+                <Clock className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600">{formatCurrency(pendingPayout)}</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="font-bold text-amber-600 text-2xl">{formatCurrency(pendingPayout)}</p>
+                <p className="text-muted-foreground text-xs">Pending</p>
               </div>
             </div>
           </CardContent>
@@ -187,12 +187,12 @@ export default function PayoutsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                <CreditCard className="h-4 w-4 text-violet-600" />
+              <div className="flex justify-center items-center bg-violet-500/10 rounded-lg w-10 h-10">
+                <CreditCard className="w-4 h-4 text-violet-600" />
               </div>
               <div>
-                <p className="text-lg font-bold">{payouts.length}</p>
-                <p className="text-xs text-muted-foreground">Total Payouts</p>
+                <p className="font-bold text-lg">{payouts.length}</p>
+                <p className="text-muted-foreground text-xs">Total Payouts</p>
               </div>
             </div>
           </CardContent>
@@ -200,12 +200,12 @@ export default function PayoutsPage() {
       </div>
 
       {/* Payout info */}
-      <Card className="border-blue-200 bg-blue-50/50">
+      <Card className="bg-blue-50/50 border-blue-200">
         <CardContent className="flex items-start gap-3 p-4">
-          <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+          <AlertCircle className="mt-0.5 w-5 h-5 text-blue-600" />
           <div>
-            <p className="text-sm font-medium text-blue-900">Payout Schedule</p>
-            <p className="text-sm text-blue-700">
+            <p className="font-medium text-blue-900 text-sm">Payout Schedule</p>
+            <p className="text-blue-700 text-sm">
               Payouts are processed on the 1st of each month for the previous month&apos;s earnings. Minimum payout threshold is {currencySymbol}1,000.
             </p>
           </div>
@@ -220,10 +220,10 @@ export default function PayoutsPage() {
         </CardHeader>
         <CardContent className="p-0">
           {payouts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Wallet className="h-12 w-12 text-muted-foreground/40 mb-3" />
+            <div className="flex flex-col justify-center items-center py-16 text-center">
+              <Wallet className="mb-3 w-12 h-12 text-muted-foreground/40" />
               <p className="font-medium">No payouts yet</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-muted-foreground text-sm">
                 Start referring customers to earn commissions
               </p>
             </div>
@@ -243,7 +243,7 @@ export default function PayoutsPage() {
                     <TableCell className="text-sm">{formatDate(payout.paidAt || payout.createdAt)}</TableCell>
                     <TableCell className="text-muted-foreground">{payout.method || 'N/A'}</TableCell>
                     <TableCell>{getStatusBadge(payout.status)}</TableCell>
-                    <TableCell className="text-right font-semibold">{formatCurrency(payout.amount)}</TableCell>
+                    <TableCell className="font-semibold text-right">{formatCurrency(payout.amount)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

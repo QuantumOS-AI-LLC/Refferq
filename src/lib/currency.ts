@@ -1,32 +1,24 @@
 import { prisma } from './prisma';
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-    'USD': '$',
-    'EUR': '€',
-    'INR': '₹',
-    'GBP': '£',
-    'BGN': 'лв.',
-    'CAD': 'CA$',
-    'AUD': 'A$',
-};
+import {
+    CURRENCY_SYMBOLS,
+    DEFAULT_CURRENCY_CODE,
+    DEFAULT_CURRENCY_SYMBOL,
+    formatCurrencyCents,
+} from './currency-format';
 
 export async function getCurrencySymbol(): Promise<string> {
     try {
         const settings = await prisma.programSettings.findFirst();
-        const currency = settings?.currency || 'USD';
+        const currency = settings?.currency || DEFAULT_CURRENCY_CODE;
         return CURRENCY_SYMBOLS[currency] || currency;
     } catch (error) {
         console.error('Failed to fetch currency symbol:', error);
-        return '$';
+        return DEFAULT_CURRENCY_SYMBOL;
     }
 }
 
 export function formatCurrency(cents: number, symbol: string): string {
-    const amount = cents / 100;
-    return `${symbol}${amount.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
+    return formatCurrencyCents(cents, symbol);
 }
 
 export async function formatAmount(cents: number): Promise<string> {

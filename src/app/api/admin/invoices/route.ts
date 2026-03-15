@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySymbol } from '@/lib/currency';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -28,7 +29,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, invoices });
+    const currencySymbol = await getCurrencySymbol();
+
+    return NextResponse.json({ success: true, invoices, currencySymbol });
   } catch (error) {
     console.error('Admin invoices GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });

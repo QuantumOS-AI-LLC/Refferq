@@ -50,6 +50,7 @@ import {
   Banknote,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DEFAULT_CURRENCY_SYMBOL } from '@/lib/currency-format';
 
 interface AffiliateStats {
   totalEarnings: number;
@@ -79,7 +80,7 @@ export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [copied, setCopied] = useState<'link' | 'code' | null>(null);
@@ -116,11 +117,11 @@ export default function AffiliateDashboard() {
           conversionRate: data.stats?.conversionRate || 0,
           referralLink: `${window.location.origin}/r/${data.affiliate?.referralCode}`,
           referralCode: data.affiliate?.referralCode || '',
-          currencySymbol: data.currencySymbol || '₹',
+          currencySymbol: data.currencySymbol || DEFAULT_CURRENCY_SYMBOL,
           nextMaturesAt: data.stats?.nextMaturesAt || null,
         });
         setReferrals(data.referrals || []);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -205,7 +206,7 @@ export default function AffiliateDashboard() {
     const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
     return (
       <Badge variant={variant} className="gap-1 text-xs">
-        <Icon className="h-3 w-3" />
+        <Icon className="w-3 h-3" />
         {status}
       </Badge>
     );
@@ -221,9 +222,9 @@ export default function AffiliateDashboard() {
       {notification && (
         <Alert variant={notification.type === 'error' ? 'destructive' : 'default'}>
           {notification.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 className="w-4 h-4" />
           ) : (
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="w-4 h-4" />
           )}
           <AlertDescription>{notification.message}</AlertDescription>
         </Alert>
@@ -235,20 +236,20 @@ export default function AffiliateDashboard() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white border-0 shadow-lg overflow-hidden relative group">
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -translate-x-full group-hover:translate-x-full" />
-          <CardContent className="flex items-center justify-between p-6 relative z-10">
+        <Card className="group relative bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 shadow-lg border-0 overflow-hidden text-white">
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 blur-2xl transition-opacity -translate-x-full group-hover:translate-x-full duration-500" />
+          <CardContent className="z-10 relative flex justify-between items-center p-6">
             <div className="flex items-center gap-5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
-                <span className="text-2xl font-bold">{currencySymbol}</span>
+              <div className="flex justify-center items-center bg-white/20 shadow-inner backdrop-blur-md rounded-2xl w-14 h-14">
+                <span className="font-bold text-2xl">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-sm text-white/90 font-medium tracking-wide">Earn 20% commission on all paid customers</p>
-                <p className="text-xl font-bold mt-1 tracking-tight">Start referring today and grow your wealth!</p>
+                <p className="font-medium text-white/90 text-sm tracking-wide">Earn 20% commission on all paid customers</p>
+                <p className="mt-1 font-bold text-xl tracking-tight">Start referring today and grow your wealth!</p>
               </div>
             </div>
-            <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="gap-2 hidden sm:flex bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95">
-              <Plus className="h-4 w-4" />
+            <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="hidden sm:flex gap-2 bg-white hover:bg-emerald-50 shadow-md border-0 text-emerald-700 hover:scale-105 active:scale-95 transition transform">
+              <Plus className="w-4 h-4" />
               Submit Lead
             </Button>
           </CardContent>
@@ -256,7 +257,7 @@ export default function AffiliateDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="gap-6 grid sm:grid-cols-2 lg:grid-cols-5">
         {[
           {
             label: 'Available Balance',
@@ -287,7 +288,7 @@ export default function AffiliateDashboard() {
             transition={{ delay: 0.3 + i * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="glass-card border-0">
+            <Card className="border-0 glass-card">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} backdrop-blur-sm transition-transform group-hover:scale-110`}>
@@ -301,9 +302,9 @@ export default function AffiliateDashboard() {
                     <p className={`text-2xl font-bold ${stat.color}`}>
                       {stat.value}
                     </p>
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                    <p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-widest">{stat.label}</p>
                     {stat.description && (
-                      <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic">{stat.description}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground/70 italic">{stat.description}</p>
                     )}
                   </div>
                 </div>
@@ -317,18 +318,18 @@ export default function AffiliateDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Link className="h-4 w-4" />
+            <Link className="w-4 h-4" />
             Your Referral Links
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {!stats?.referralCode ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                <Link className="h-6 w-6 text-muted-foreground" />
+            <div className="flex flex-col justify-center items-center py-8 text-center">
+              <div className="flex justify-center items-center bg-muted mb-4 rounded-2xl w-14 h-14">
+                <Link className="w-6 h-6 text-muted-foreground" />
               </div>
               <p className="font-medium">No referral code found</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-muted-foreground text-sm">
                 Generate your referral code to start earning commissions
               </p>
               <Button className="mt-4" onClick={handleGenerateCode}>
@@ -346,7 +347,7 @@ export default function AffiliateDashboard() {
                     size="icon"
                     onClick={() => copyToClipboard(stats?.referralLink || '', 'link')}
                   >
-                    {copied === 'link' ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                    {copied === 'link' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
               </div>
@@ -359,7 +360,7 @@ export default function AffiliateDashboard() {
                     size="icon"
                     onClick={() => copyToClipboard(stats?.referralCode || '', 'code')}
                   >
-                    {copied === 'code' ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                    {copied === 'code' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
               </div>
@@ -370,7 +371,7 @@ export default function AffiliateDashboard() {
 
       {/* Recent Referrals */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row justify-between items-center">
           <div>
             <CardTitle className="text-base">Recent Referrals</CardTitle>
             <CardDescription>Latest 5 referrals</CardDescription>
@@ -378,7 +379,7 @@ export default function AffiliateDashboard() {
           {referrals.length > 5 && (
             <Button variant="ghost" size="sm" asChild>
               <a href="/affiliate/referrals" className="gap-1">
-                View All <ArrowRight className="h-3.5 w-3.5" />
+                View All <ArrowRight className="w-3.5 h-3.5" />
               </a>
             </Button>
           )}
@@ -404,7 +405,7 @@ export default function AffiliateDashboard() {
                     <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                    <TableCell className="text-right font-semibold">
+                    <TableCell className="font-semibold text-right">
                       {`${currencySymbol}${(Number(ref.estimatedValue) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </TableCell>
                   </TableRow>
@@ -416,35 +417,35 @@ export default function AffiliateDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="gap-4 grid sm:grid-cols-3">
         <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/affiliate/referrals'}>
-          <CardContent className="p-5 flex items-center gap-3">
-            <Users className="h-5 w-5 text-blue-600" />
+          <CardContent className="flex items-center gap-3 p-5">
+            <Users className="w-5 h-5 text-blue-600" />
             <div>
               <p className="font-medium">Manage Referrals</p>
-              <p className="text-xs text-muted-foreground">View all your submissions</p>
+              <p className="text-muted-foreground text-xs">View all your submissions</p>
             </div>
-            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+            <ArrowRight className="ml-auto w-4 h-4 text-muted-foreground" />
           </CardContent>
         </Card>
         <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/affiliate/reports'}>
-          <CardContent className="p-5 flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-emerald-600" />
+          <CardContent className="flex items-center gap-3 p-5">
+            <TrendingUp className="w-5 h-5 text-emerald-600" />
             <div>
               <p className="font-medium">View Reports</p>
-              <p className="text-xs text-muted-foreground">Analyze your performance</p>
+              <p className="text-muted-foreground text-xs">Analyze your performance</p>
             </div>
-            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+            <ArrowRight className="ml-auto w-4 h-4 text-muted-foreground" />
           </CardContent>
         </Card>
         <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/affiliate/resources'}>
-          <CardContent className="p-5 flex items-center gap-3">
-            <Target className="h-5 w-5 text-violet-600" />
+          <CardContent className="flex items-center gap-3 p-5">
+            <Target className="w-5 h-5 text-violet-600" />
             <div>
               <p className="font-medium">Resources</p>
-              <p className="text-xs text-muted-foreground">Marketing materials</p>
+              <p className="text-muted-foreground text-xs">Marketing materials</p>
             </div>
-            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+            <ArrowRight className="ml-auto w-4 h-4 text-muted-foreground" />
           </CardContent>
         </Card>
       </div>
@@ -488,7 +489,7 @@ export default function AffiliateDashboard() {
                 onChange={(e) => setSubmitForm({ ...submitForm, estimatedValue: e.target.value })}
                 placeholder="0"
               />
-              <p className="text-xs text-muted-foreground">Type 0 if unsure</p>
+              <p className="text-muted-foreground text-xs">Type 0 if unsure</p>
             </div>
 
             <DialogFooter>
@@ -496,7 +497,7 @@ export default function AffiliateDashboard() {
                 Cancel
               </Button>
               <Button type="submit" disabled={submitLoading}>
-                {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {submitLoading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
                 Submit Lead
               </Button>
             </DialogFooter>
@@ -509,9 +510,9 @@ export default function AffiliateDashboard() {
 
 function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Icon className="h-10 w-10 text-muted-foreground/40 mb-3" />
-      <p className="text-sm font-medium text-muted-foreground">{message}</p>
+    <div className="flex flex-col justify-center items-center py-12 text-center">
+      <Icon className="mb-3 w-10 h-10 text-muted-foreground/40" />
+      <p className="font-medium text-muted-foreground text-sm">{message}</p>
     </div>
   );
 }
@@ -519,17 +520,17 @@ function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message:
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-20 w-full rounded-xl" />
-      <Skeleton className="h-10 w-full max-w-md" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Skeleton className="rounded-xl w-full h-20" />
+      <Skeleton className="w-full max-w-md h-10" />
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-lg" />
+                <Skeleton className="rounded-lg w-10 h-10" />
                 <div>
-                  <Skeleton className="h-7 w-20 mb-1" />
-                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="mb-1 w-20 h-7" />
+                  <Skeleton className="w-16 h-3" />
                 </div>
               </div>
             </CardContent>
@@ -537,9 +538,9 @@ function DashboardSkeleton() {
         ))}
       </div>
       <Card>
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="space-y-4 p-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
+            <Skeleton key={i} className="w-full h-10" />
           ))}
         </CardContent>
       </Card>

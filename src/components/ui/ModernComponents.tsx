@@ -7,6 +7,7 @@ export * from './ModernUI';
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 // ============================================
 // REVENUE CARD (Special variant)
@@ -45,26 +46,26 @@ export const RevenueCard = ({
       className={`relative overflow-hidden bg-gradient-to-br ${gradient} rounded-3xl p-6 text-white shadow-2xl`}
     >
       {/* Decorative elements */}
-      <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-      <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+      <div className="-top-8 -right-8 absolute bg-white/10 blur-2xl rounded-full w-32 h-32" />
+      <div className="-bottom-8 -left-8 absolute bg-white/10 blur-2xl rounded-full w-24 h-24" />
 
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-white/80 text-sm font-medium">{title}</span>
+      <div className="z-10 relative">
+        <div className="flex justify-between items-center mb-4">
+          <span className="font-medium text-white/80 text-sm">{title}</span>
           {icon && (
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <div className="flex justify-center items-center bg-white/20 backdrop-blur-sm rounded-xl w-10 h-10">
               {icon}
             </div>
           )}
         </div>
 
         <div className="mb-2">
-          <span className="text-4xl font-bold">
+          <span className="font-bold text-4xl">
             {currency}{(amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between items-center">
           {subtitle && (
             <span className="text-white/60 text-sm">{subtitle}</span>
           )}
@@ -115,8 +116,8 @@ export const MetricCard = ({
       whileHover={{ y: -4, scale: 1.02 }}
       className={`bg-gradient-to-br ${style.bg} rounded-2xl p-5 border border-white/50`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-sm font-medium text-gray-600">{label}</span>
+      <div className="flex justify-between items-start mb-3">
+        <span className="font-medium text-gray-600 text-sm">{label}</span>
         <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${style.icon} flex items-center justify-center text-white shadow-lg`}>
           {icon}
         </div>
@@ -135,6 +136,7 @@ export const PartnerRow = ({
   email,
   code,
   revenue,
+  currency = DEFAULT_CURRENCY_SYMBOL,
   status,
   avatar,
   onClick
@@ -143,6 +145,7 @@ export const PartnerRow = ({
   email: string;
   code: string;
   revenue: number;
+  currency?: string;
   status: 'ACTIVE' | 'PENDING' | 'SUSPENDED';
   avatar?: string;
   onClick?: () => void;
@@ -160,29 +163,29 @@ export const PartnerRow = ({
     <motion.div
       whileHover={{ backgroundColor: 'rgba(249, 250, 251, 0.8)' }}
       onClick={onClick}
-      className="flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border-b border-gray-100 last:border-0"
+      className="flex items-center gap-4 p-4 border-gray-100 last:border-0 border-b rounded-xl transition-all cursor-pointer"
     >
       {avatar ? (
-        <img src={avatar} alt={name} className="w-12 h-12 rounded-xl object-cover" />
+        <img src={avatar} alt={name} className="rounded-xl w-12 h-12 object-cover" />
       ) : (
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+        <div className="flex justify-center items-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg rounded-xl w-12 h-12 font-bold text-white">
           {initials}
         </div>
       )}
 
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-gray-900">{name}</div>
-        <div className="text-sm text-gray-500 truncate">{email}</div>
+        <div className="text-gray-500 text-sm truncate">{email}</div>
       </div>
 
-      <div className="text-center px-4">
-        <div className="text-xs text-gray-500 mb-1">Referral Code</div>
-        <div className="font-mono text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{code}</div>
+      <div className="px-4 text-center">
+        <div className="mb-1 text-gray-500 text-xs">Referral Code</div>
+        <div className="bg-indigo-50 px-2 py-1 rounded-lg font-mono font-medium text-indigo-600 text-sm">{code}</div>
       </div>
 
-      <div className="text-right px-4">
-        <div className="text-xs text-gray-500 mb-1">Revenue</div>
-        <div className="font-bold text-gray-900">₹{(revenue / 100).toFixed(2)}</div>
+      <div className="px-4 text-right">
+        <div className="mb-1 text-gray-500 text-xs">Revenue</div>
+        <div className="font-bold text-gray-900">{formatCurrencyCents(revenue, currency)}</div>
       </div>
 
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${style.bg} ${style.text}`}>
@@ -202,6 +205,7 @@ export const CustomerRow = ({
   partner,
   date,
   amount,
+  currency = DEFAULT_CURRENCY_SYMBOL,
   status,
   onClick
 }: {
@@ -209,6 +213,7 @@ export const CustomerRow = ({
   partner: string;
   date: string;
   amount?: number;
+  currency?: string;
   status: 'APPROVED' | 'PENDING' | 'REJECTED';
   onClick?: () => void;
 }) => {
@@ -224,15 +229,15 @@ export const CustomerRow = ({
     <motion.div
       whileHover={{ backgroundColor: 'rgba(249, 250, 251, 0.8)' }}
       onClick={onClick}
-      className="grid grid-cols-5 gap-4 items-center p-4 rounded-xl cursor-pointer transition-all border-b border-gray-100 last:border-0"
+      className="items-center gap-4 grid grid-cols-5 p-4 border-gray-100 last:border-0 border-b rounded-xl transition-all cursor-pointer"
     >
-      <div className="text-sm text-gray-600">
+      <div className="text-gray-600 text-sm">
         {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
       </div>
-      <div className="text-gray-900 font-medium truncate">{email}</div>
+      <div className="font-medium text-gray-900 truncate">{email}</div>
       <div className="text-gray-600 truncate">{partner}</div>
       <div className="font-semibold text-gray-900">
-        {amount !== undefined ? `₹${(amount / 100).toFixed(2)}` : '-'}
+        {amount !== undefined ? formatCurrencyCents(amount, currency) : '-'}
       </div>
       <div className="flex justify-end">
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${style.bg} ${style.text}`}>
@@ -273,13 +278,13 @@ export const ActionCard = ({
       whileHover={{ scale: 1.02, y: -4 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-full text-left p-6 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all group"
+      className="group bg-white shadow-lg hover:shadow-xl p-6 border border-gray-100 rounded-2xl w-full text-left transition-all"
     >
       <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colorStyles[color]} flex items-center justify-center text-white text-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
-      <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
-      <p className="text-sm text-gray-500">{description}</p>
+      <h3 className="mb-1 font-bold text-gray-900">{title}</h3>
+      <p className="text-gray-500 text-sm">{description}</p>
     </motion.button>
   );
 };
@@ -322,10 +327,10 @@ export const NotificationItem = ({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-gray-900">{title}</span>
-          {unread && <span className="w-2 h-2 rounded-full bg-indigo-500" />}
+          {unread && <span className="bg-indigo-500 rounded-full w-2 h-2" />}
         </div>
-        <p className="text-sm text-gray-600 truncate">{message}</p>
-        <span className="text-xs text-gray-400 mt-1">{time}</span>
+        <p className="text-gray-600 text-sm truncate">{message}</p>
+        <span className="mt-1 text-gray-400 text-xs">{time}</span>
       </div>
     </motion.div>
   );
@@ -368,10 +373,10 @@ export const StatWithChart = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+      className="bg-white shadow-lg p-6 border border-gray-100 rounded-2xl"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-500">{title}</span>
+      <div className="flex justify-between items-center mb-2">
+        <span className="font-medium text-gray-500 text-sm">{title}</span>
         {change && (
           <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${changeStyles[changeType].bg} ${changeStyles[changeType].text}`}>
             {changeStyles[changeType].icon} {change}
@@ -379,7 +384,7 @@ export const StatWithChart = ({
         )}
       </div>
 
-      <div className="text-3xl font-bold text-gray-900 mb-4">{value}</div>
+      <div className="mb-4 font-bold text-gray-900 text-3xl">{value}</div>
 
       <div className="h-16">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
@@ -426,14 +431,14 @@ export const SectionHeader = ({
   action?: React.ReactNode;
   icon?: React.ReactNode;
 }) => (
-  <div className="flex items-center justify-between mb-6">
+  <div className="flex justify-between items-center mb-6">
     <div className="flex items-center gap-3">
       {icon && (
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+        <div className="flex justify-center items-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg rounded-xl w-10 h-10 text-white">
           {icon}
         </div>
       )}
-      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <h2 className="font-bold text-gray-900 text-xl">{title}</h2>
     </div>
     {action}
   </div>

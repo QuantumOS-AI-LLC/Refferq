@@ -19,8 +19,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  FileText, Plus, Eye, IndianRupee, CheckCircle2, Clock, AlertCircle, Trash2,
+  FileText, Plus, Eye, CheckCircle2, Clock, AlertCircle, Trash2, Wallet,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 interface Invoice {
   id: string;
@@ -46,6 +47,7 @@ export default function InvoicesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [form, setForm] = useState({
     affiliateId: '', amountCents: '', taxCents: '0', notes: '', dueAt: '',
   });
@@ -56,7 +58,10 @@ export default function InvoicesPage() {
     try {
       const res = await fetch('/api/admin/invoices');
       const data = await res.json();
-      if (data.success) setInvoices(data.invoices || []);
+      if (data.success) {
+        setInvoices(data.invoices || []);
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
+      }
     } catch (error) {
       console.error('Failed to fetch invoices:', error);
     } finally {
@@ -119,7 +124,7 @@ export default function InvoicesPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    formatCurrencyCents(cents, currencySymbol, 'en-IN');
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -134,7 +139,7 @@ export default function InvoicesPage() {
     const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
     return (
       <Badge variant={variant} className="gap-1 text-xs">
-        <Icon className="h-3 w-3" />
+        <Icon className="w-3 h-3" />
         {status}
       </Badge>
     );
@@ -150,8 +155,8 @@ export default function InvoicesPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}</div>
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}</div>
         <Skeleton className="h-96" />
       </div>
     );
@@ -159,45 +164,45 @@ export default function InvoicesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Invoices</h1>
           <p className="text-muted-foreground">Generate and manage payout invoices</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 w-4 h-4" />
           Create Invoice
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="gap-4 grid md:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Invoices</CardTitle>
+            <FileText className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.total}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{stats.total}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Paid</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Paid</CardTitle>
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.paid}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{stats.paid}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Outstanding</CardTitle>
+            <Clock className="w-4 h-4 text-amber-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{formatCurrency(stats.outstanding)}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{formatCurrency(stats.outstanding)}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-            <IndianRupee className="h-4 w-4 text-emerald-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Paid</CardTitle>
+            <Wallet className="w-4 h-4 text-emerald-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{formatCurrency(stats.totalRevenue)}</div></CardContent>
         </Card>
       </div>
 
@@ -208,10 +213,10 @@ export default function InvoicesPage() {
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No invoices yet</h3>
-              <p className="text-sm text-muted-foreground">Create your first payout invoice</p>
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <FileText className="w-12 h-12 text-muted-foreground/50" />
+              <h3 className="mt-4 font-semibold text-lg">No invoices yet</h3>
+              <p className="text-muted-foreground text-sm">Create your first payout invoice</p>
             </div>
           ) : (
             <Table>
@@ -231,18 +236,18 @@ export default function InvoicesPage() {
               <TableBody>
                 {invoices.map(inv => (
                   <TableRow key={inv.id}>
-                    <TableCell className="font-mono text-sm font-medium">{inv.invoiceNumber}</TableCell>
+                    <TableCell className="font-mono font-medium text-sm">{inv.invoiceNumber}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{inv.affiliateId.slice(0, 8)}...</TableCell>
                     <TableCell>{formatCurrency(inv.amountCents)}</TableCell>
                     <TableCell className="text-muted-foreground">{formatCurrency(inv.taxCents)}</TableCell>
                     <TableCell className="font-semibold">{formatCurrency(inv.totalCents)}</TableCell>
                     <TableCell>{getStatusBadge(inv.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{inv.issuedAt ? formatDate(inv.issuedAt) : '—'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{inv.dueAt ? formatDate(inv.dueAt) : '—'}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{inv.issuedAt ? formatDate(inv.issuedAt) : '—'}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{inv.dueAt ? formatDate(inv.dueAt) : '—'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => setViewInvoice(inv)}>
-                          <Eye className="h-4 w-4" />
+                          <Eye className="w-4 h-4" />
                         </Button>
                         {inv.status === 'ISSUED' && (
                           <Button variant="ghost" size="sm" onClick={() => updateStatus(inv.id, 'PAID')}>
@@ -251,7 +256,7 @@ export default function InvoicesPage() {
                         )}
                         {inv.status !== 'PAID' && (
                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(inv.id)}>
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         )}
                       </div>
@@ -271,27 +276,27 @@ export default function InvoicesPage() {
             <DialogTitle>Create Invoice</DialogTitle>
             <DialogDescription>Generate a new payout invoice for an affiliate</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
+          <div className="gap-4 grid py-4">
+            <div className="gap-2 grid">
               <Label>Affiliate ID *</Label>
               <Input value={form.affiliateId} onChange={e => setForm({...form, affiliateId: e.target.value})} placeholder="Affiliate ID" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
+            <div className="gap-4 grid grid-cols-2">
+              <div className="gap-2 grid">
                 <Label>Amount (cents) *</Label>
                 <Input type="number" value={form.amountCents} onChange={e => setForm({...form, amountCents: e.target.value})} placeholder="100000" />
-                <p className="text-xs text-muted-foreground">100000 = ₹1,000</p>
+                <p className="text-muted-foreground text-xs">100000 = {formatCurrency(100000)}</p>
               </div>
-              <div className="grid gap-2">
+              <div className="gap-2 grid">
                 <Label>Tax (cents)</Label>
                 <Input type="number" value={form.taxCents} onChange={e => setForm({...form, taxCents: e.target.value})} placeholder="0" />
               </div>
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label>Due Date</Label>
               <Input type="date" value={form.dueAt} onChange={e => setForm({...form, dueAt: e.target.value})} />
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label>Notes</Label>
               <Input value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Optional notes" />
             </div>
@@ -313,18 +318,18 @@ export default function InvoicesPage() {
           </DialogHeader>
           {viewInvoice && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="gap-4 grid grid-cols-2 text-sm">
                 <div>
                   <p className="text-muted-foreground">Status</p>
                   <div className="mt-1">{getStatusBadge(viewInvoice.status)}</div>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Affiliate</p>
-                  <p className="font-mono mt-1">{viewInvoice.affiliateId}</p>
+                  <p className="mt-1 font-mono">{viewInvoice.affiliateId}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Amount</p>
-                  <p className="font-semibold mt-1">{formatCurrency(viewInvoice.amountCents)}</p>
+                  <p className="mt-1 font-semibold">{formatCurrency(viewInvoice.amountCents)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Tax</p>
@@ -332,7 +337,7 @@ export default function InvoicesPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total</p>
-                  <p className="font-bold text-lg mt-1">{formatCurrency(viewInvoice.totalCents)}</p>
+                  <p className="mt-1 font-bold text-lg">{formatCurrency(viewInvoice.totalCents)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Due Date</p>
@@ -342,7 +347,7 @@ export default function InvoicesPage() {
               {viewInvoice.notes && (
                 <div>
                   <p className="text-muted-foreground text-sm">Notes</p>
-                  <p className="text-sm mt-1">{viewInvoice.notes}</p>
+                  <p className="mt-1 text-sm">{viewInvoice.notes}</p>
                 </div>
               )}
             </div>

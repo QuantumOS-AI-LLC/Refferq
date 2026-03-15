@@ -37,6 +37,7 @@ import {
   Ban,
   Download,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL } from '@/lib/currency-format';
 
 interface Payout {
   id: string;
@@ -63,7 +64,7 @@ export default function PayoutsPage() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
 
   useEffect(() => {
     fetchPayouts();
@@ -75,7 +76,7 @@ export default function PayoutsPage() {
       const data = await res.json();
       if (data.success) {
         setPayouts(data.payouts || []);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -117,8 +118,8 @@ export default function PayoutsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24" />)}
         </div>
         <Skeleton className="h-96" />
@@ -129,45 +130,45 @@ export default function PayoutsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Payouts</h1>
+        <h1 className="font-bold text-2xl tracking-tight">Payouts</h1>
         <p className="text-muted-foreground">Manage partner commission payouts</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="gap-4 grid md:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Payouts</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Payouts</CardTitle>
+            <Wallet className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="font-bold text-2xl">{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Pending</CardTitle>
+            <Clock className="w-4 h-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="font-bold text-2xl">{stats.pending}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Completed</CardTitle>
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="font-bold text-2xl">{stats.completed}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-            <span className="text-sm font-bold text-muted-foreground">{currencySymbol}</span>
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Paid</CardTitle>
+            <span className="font-bold text-muted-foreground text-sm">{currencySymbol}</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {currencySymbol}{(stats.totalPaid / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
@@ -176,14 +177,14 @@ export default function PayoutsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-4">
             <div>
               <CardTitle>Payout History</CardTitle>
               <CardDescription>All partner payout records</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 w-4 h-4" />
                 Export CSV
               </Button>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -203,10 +204,10 @@ export default function PayoutsPage() {
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Wallet className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No payouts found</h3>
-              <p className="text-sm text-muted-foreground">Payouts will appear here once processed</p>
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <Wallet className="w-12 h-12 text-muted-foreground/50" />
+              <h3 className="mt-4 font-semibold text-lg">No payouts found</h3>
+              <p className="text-muted-foreground text-sm">Payouts will appear here once processed</p>
             </div>
           ) : (
             <Table>
@@ -229,7 +230,7 @@ export default function PayoutsPage() {
                       <TableCell>
                         <div>
                           <p className="font-medium text-sm">{payout.affiliateName}</p>
-                          <p className="text-xs text-muted-foreground">{payout.affiliateEmail}</p>
+                          <p className="text-muted-foreground text-xs">{payout.affiliateEmail}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -242,14 +243,14 @@ export default function PayoutsPage() {
                       <TableCell>
                         <Badge variant={cfg.variant}>{cfg.label}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-sm">
                         {new Date(payout.createdAt).toLocaleDateString('en-IN', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
                         })}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-sm">
                         {payout.processedAt
                           ? new Date(payout.processedAt).toLocaleDateString('en-IN', {
                             day: 'numeric',
@@ -273,21 +274,21 @@ export default function PayoutsPage() {
 function PayoutsSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <Skeleton className="h-7 w-36 mb-1" />
-          <Skeleton className="h-4 w-64" />
+          <Skeleton className="mb-1 w-36 h-7" />
+          <Skeleton className="w-64 h-4" />
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="w-24 h-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="w-32 h-8" />
             </CardContent>
           </Card>
         ))}
@@ -295,21 +296,21 @@ function PayoutsSkeleton() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <div>
-              <Skeleton className="h-6 w-32 mb-1" />
-              <Skeleton className="h-4 w-48" />
+              <Skeleton className="mb-1 w-32 h-6" />
+              <Skeleton className="w-48 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-32" />
+              <Skeleton className="w-24 h-9" />
+              <Skeleton className="w-32 h-9" />
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <Skeleton key={i} className="w-full h-12" />
             ))}
           </div>
         </CardContent>

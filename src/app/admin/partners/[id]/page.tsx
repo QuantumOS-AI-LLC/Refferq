@@ -45,7 +45,6 @@ import {
   ArrowLeft,
   Users,
   Wallet,
-  IndianRupee,
   CreditCard,
   Copy,
   ExternalLink,
@@ -59,6 +58,7 @@ import {
   AlertCircle,
   Ban,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 interface Partner {
   id: string;
@@ -121,6 +121,7 @@ export default function PartnerDetailPage() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
   const [newStatus, setNewStatus] = useState<'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('PENDING');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
@@ -140,6 +141,7 @@ export default function PartnerDetailPage() {
       const res = await fetch('/api/admin/affiliates');
       if (res.ok) {
         const data = await res.json();
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
         const affiliate = data.affiliates?.find((a: any) => a.id === partnerId);
         if (affiliate) {
           setPartner({
@@ -289,7 +291,7 @@ export default function PartnerDetailPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    formatCurrencyCents(cents, currencySymbol, 'en-IN');
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -314,7 +316,7 @@ export default function PartnerDetailPage() {
     const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
     return (
       <Badge variant={variant} className="gap-1 text-xs">
-        <Icon className="h-3 w-3" />
+        <Icon className="w-3 h-3" />
         {status}
       </Badge>
     );
@@ -326,14 +328,14 @@ export default function PartnerDetailPage() {
 
   if (!partner) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-          <Users className="h-7 w-7 text-muted-foreground" />
+      <div className="flex flex-col justify-center items-center py-20 text-center">
+        <div className="flex justify-center items-center bg-muted rounded-2xl w-16 h-16">
+          <Users className="w-7 h-7 text-muted-foreground" />
         </div>
-        <h2 className="mt-4 text-xl font-bold">Partner not found</h2>
-        <p className="mt-1 text-sm text-muted-foreground">This partner may have been removed</p>
+        <h2 className="mt-4 font-bold text-xl">Partner not found</h2>
+        <p className="mt-1 text-muted-foreground text-sm">This partner may have been removed</p>
         <Button className="mt-6" onClick={() => router.push('/admin/partners')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 w-4 h-4" />
           Back to Partners
         </Button>
       </div>
@@ -343,24 +345,24 @@ export default function PartnerDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex sm:flex-row flex-col sm:justify-between sm:items-start gap-4">
         <div className="space-y-3">
           <Button variant="ghost" size="sm" className="-ml-2" onClick={() => router.push('/admin/partners')}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
+            <ArrowLeft className="mr-1 w-4 h-4" />
             Partners
           </Button>
           <div className="flex items-center gap-4">
-            <Avatar className="h-14 w-14">
-              <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
+            <Avatar className="w-14 h-14">
+              <AvatarFallback className="bg-primary/10 font-bold text-primary text-lg">
                 {(partner.name || 'P').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{partner.name}</h1>
-              <p className="text-sm text-muted-foreground">{partner.email}</p>
-              <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="font-mono text-xs gap-1">
-                  <Copy className="h-3 w-3" />
+              <h1 className="font-bold text-2xl tracking-tight">{partner.name}</h1>
+              <p className="text-muted-foreground text-sm">{partner.email}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                <Badge variant="outline" className="gap-1 font-mono text-xs">
+                  <Copy className="w-3 h-3" />
                   {partner.referralCode}
                 </Badge>
                 {partner.partnerGroup && (
@@ -380,22 +382,22 @@ export default function PartnerDetailPage() {
           disabled={pendingCommissions.length === 0}
           className="gap-1.5"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           Create Payout
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-600" />
+              <div className="flex justify-center items-center bg-blue-500/10 rounded-lg w-10 h-10">
+                <Users className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{customers.length}</p>
-                <p className="text-xs text-muted-foreground">Customers</p>
+                <p className="font-bold text-2xl">{customers.length}</p>
+                <p className="text-muted-foreground text-xs">Customers</p>
               </div>
             </div>
           </CardContent>
@@ -403,12 +405,12 @@ export default function PartnerDetailPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <Clock className="h-4 w-4 text-amber-600" />
+              <div className="flex justify-center items-center bg-amber-500/10 rounded-lg w-10 h-10">
+                <Clock className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600">{formatCurrency(pendingAmount)}</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="font-bold text-amber-600 text-2xl">{formatCurrency(pendingAmount)}</p>
+                <p className="text-muted-foreground text-xs">Pending</p>
               </div>
             </div>
           </CardContent>
@@ -416,12 +418,12 @@ export default function PartnerDetailPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="flex justify-center items-center bg-emerald-500/10 rounded-lg w-10 h-10">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(paidAmount)}</p>
-                <p className="text-xs text-muted-foreground">Paid Out</p>
+                <p className="font-bold text-emerald-600 text-2xl">{formatCurrency(paidAmount)}</p>
+                <p className="text-muted-foreground text-xs">Paid Out</p>
               </div>
             </div>
           </CardContent>
@@ -429,12 +431,12 @@ export default function PartnerDetailPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                <CreditCard className="h-4 w-4 text-violet-600" />
+              <div className="flex justify-center items-center bg-violet-500/10 rounded-lg w-10 h-10">
+                <CreditCard className="w-4 h-4 text-violet-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{payouts.length}</p>
-                <p className="text-xs text-muted-foreground">Payouts</p>
+                <p className="font-bold text-2xl">{payouts.length}</p>
+                <p className="text-muted-foreground text-xs">Payouts</p>
               </div>
             </div>
           </CardContent>
@@ -452,7 +454,7 @@ export default function PartnerDetailPage() {
 
         {/* Overview */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="gap-6 grid lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Partner Information</CardTitle>
@@ -466,8 +468,8 @@ export default function PartnerDetailPage() {
                   { label: 'Commission Rate', value: `${(partner.commissionRate * 100).toFixed(0)}%` },
                   { label: 'Partner Since', value: formatDate(partner.createdAt) },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <div key={item.label} className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">{item.label}</span>
                     <span className={`text-sm font-medium ${item.mono ? 'font-mono' : ''}`}>{item.value}</span>
                   </div>
                 ))}
@@ -479,44 +481,44 @@ export default function PartnerDetailPage() {
                 <CardTitle className="text-base">Performance</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="gap-4 grid grid-cols-3">
                   <div className="text-center">
-                    <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-muted">
-                      <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex justify-center items-center bg-muted mx-auto rounded-lg w-10 h-10">
+                      <MousePointerClick className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <p className="mt-2 text-xl font-bold">{partner.totalClicks}</p>
-                    <p className="text-xs text-muted-foreground">Clicks</p>
+                    <p className="mt-2 font-bold text-xl">{partner.totalClicks}</p>
+                    <p className="text-muted-foreground text-xs">Clicks</p>
                   </div>
                   <div className="text-center">
-                    <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-muted">
-                      <Target className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex justify-center items-center bg-muted mx-auto rounded-lg w-10 h-10">
+                      <Target className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <p className="mt-2 text-xl font-bold">{partner.totalLeads}</p>
-                    <p className="text-xs text-muted-foreground">Leads</p>
+                    <p className="mt-2 font-bold text-xl">{partner.totalLeads}</p>
+                    <p className="text-muted-foreground text-xs">Leads</p>
                   </div>
                   <div className="text-center">
-                    <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-muted">
-                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <div className="flex justify-center items-center bg-muted mx-auto rounded-lg w-10 h-10">
+                      <TrendingUp className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <p className="mt-2 text-xl font-bold text-emerald-600">
+                    <p className="mt-2 font-bold text-emerald-600 text-xl">
                       {formatCurrency(partner.totalRevenue * 100)}
                     </p>
-                    <p className="text-xs text-muted-foreground">Revenue</p>
+                    <p className="text-muted-foreground text-xs">Revenue</p>
                   </div>
                 </div>
                 <Separator />
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Commissions</span>
-                    <span className="text-sm font-bold">{commissions.length}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">Total Commissions</span>
+                    <span className="font-bold text-sm">{commissions.length}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Pending Amount</span>
-                    <span className="text-sm font-bold text-amber-600">{formatCurrency(pendingAmount)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">Pending Amount</span>
+                    <span className="font-bold text-amber-600 text-sm">{formatCurrency(pendingAmount)}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Paid Amount</span>
-                    <span className="text-sm font-bold text-emerald-600">{formatCurrency(paidAmount)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">Paid Amount</span>
+                    <span className="font-bold text-emerald-600 text-sm">{formatCurrency(paidAmount)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -550,11 +552,11 @@ export default function PartnerDetailPage() {
                         <TableCell className="font-medium">{customer.name}</TableCell>
                         <TableCell className="text-muted-foreground">{customer.email}</TableCell>
                         <TableCell>{getStatusBadge(customer.status)}</TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(customer.totalPaid * 100)}</TableCell>
+                        <TableCell className="font-medium text-right">{formatCurrency(customer.totalPaid * 100)}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{formatDate(customer.createdAt)}</TableCell>
                         <TableCell>
                           <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/customers/${customer.id}`)}>
-                            <ExternalLink className="h-3.5 w-3.5" />
+                            <ExternalLink className="w-3.5 h-3.5" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -562,9 +564,9 @@ export default function PartnerDetailPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground">No customers yet</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <Users className="mb-3 w-10 h-10 text-muted-foreground/40" />
+                  <p className="font-medium text-muted-foreground text-sm">No customers yet</p>
                 </div>
               )}
             </CardContent>
@@ -574,7 +576,7 @@ export default function PartnerDetailPage() {
         {/* Commissions */}
         <TabsContent value="commissions">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle className="text-base">Commission History</CardTitle>
                 <CardDescription>
@@ -583,7 +585,7 @@ export default function PartnerDetailPage() {
               </div>
               {pendingCommissions.length > 0 && (
                 <Button size="sm" onClick={() => setShowPayoutModal(true)}>
-                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  <Plus className="mr-1 w-3.5 h-3.5" />
                   Create Payout
                 </Button>
               )}
@@ -605,17 +607,17 @@ export default function PartnerDetailPage() {
                       <TableRow key={comm.id}>
                         <TableCell className="text-muted-foreground text-sm">{formatDate(comm.createdAt)}</TableCell>
                         <TableCell className="font-medium">{comm.customerName}</TableCell>
-                        <TableCell className="text-right font-semibold text-primary">{formatCurrency(comm.amountCents)}</TableCell>
-                        <TableCell className="text-right text-muted-foreground">{(comm.rate * 100).toFixed(0)}%</TableCell>
+                        <TableCell className="font-semibold text-primary text-right">{formatCurrency(comm.amountCents)}</TableCell>
+                        <TableCell className="text-muted-foreground text-right">{(comm.rate * 100).toFixed(0)}%</TableCell>
                         <TableCell>{getStatusBadge(comm.status)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <IndianRupee className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground">No commissions yet</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <IndianRupee className="mb-3 w-10 h-10 text-muted-foreground/40" />
+                  <p className="font-medium text-muted-foreground text-sm">No commissions yet</p>
                 </div>
               )}
             </CardContent>
@@ -625,14 +627,14 @@ export default function PartnerDetailPage() {
         {/* Payouts */}
         <TabsContent value="payouts">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle className="text-base">Payout History</CardTitle>
                 <CardDescription>{payouts.length} payout{payouts.length !== 1 ? 's' : ''}</CardDescription>
               </div>
               {pendingCommissions.length > 0 && (
                 <Button size="sm" onClick={() => setShowPayoutModal(true)}>
-                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  <Plus className="mr-1 w-3.5 h-3.5" />
                   Create Payout
                 </Button>
               )}
@@ -655,7 +657,7 @@ export default function PartnerDetailPage() {
                     {payouts.map((payout) => (
                       <TableRow key={payout.id}>
                         <TableCell className="text-muted-foreground text-sm">{formatDate(payout.createdAt)}</TableCell>
-                        <TableCell className="text-right font-semibold text-emerald-600">{formatCurrency(payout.amountCents)}</TableCell>
+                        <TableCell className="font-semibold text-emerald-600 text-right">{formatCurrency(payout.amountCents)}</TableCell>
                         <TableCell className="text-right">{payout.commissionCount}</TableCell>
                         <TableCell>{getStatusBadge(payout.status)}</TableCell>
                         <TableCell className="text-muted-foreground">{payout.method || '\u2014'}</TableCell>
@@ -672,9 +674,9 @@ export default function PartnerDetailPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Wallet className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <Wallet className="mb-3 w-10 h-10 text-muted-foreground/40" />
+                  <p className="font-medium text-muted-foreground text-sm">No payouts yet</p>
                   {pendingCommissions.length > 0 && (
                     <Button variant="outline" size="sm" className="mt-3" onClick={() => setShowPayoutModal(true)}>
                       Create First Payout
@@ -698,9 +700,9 @@ export default function PartnerDetailPage() {
             <DialogDescription>Select commissions to include in this payout</DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-lg bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Selected total</p>
-            <p className="text-2xl font-bold text-primary">
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <p className="text-muted-foreground text-sm">Selected total</p>
+            <p className="font-bold text-primary text-2xl">
               {formatCurrency(
                 selectedCommissions.reduce((sum, id) => {
                   const comm = pendingCommissions.find((c) => c.id === id);
@@ -708,12 +710,12 @@ export default function PartnerDetailPage() {
                 }, 0)
               )}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground text-xs">
               {selectedCommissions.length} of {pendingCommissions.length} commissions
             </p>
           </div>
 
-          <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+          <div className="space-y-2 pr-1 max-h-64 overflow-y-auto">
             {pendingCommissions.map((comm) => (
               <div
                 key={comm.id}
@@ -729,12 +731,12 @@ export default function PartnerDetailPage() {
                   onCheckedChange={() => toggleCommissionSelection(comm.id)}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{comm.customerName}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm truncate">{comm.customerName}</p>
+                  <p className="text-muted-foreground text-xs">
                     {formatDate(comm.createdAt)} · {(comm.rate * 100).toFixed(0)}%
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-primary shrink-0">
+                <span className="font-semibold text-primary text-sm shrink-0">
                   {formatCurrency(comm.amountCents)}
                 </span>
               </div>
@@ -746,7 +748,7 @@ export default function PartnerDetailPage() {
               Cancel
             </Button>
             <Button onClick={handleCreatePayout} disabled={payoutLoading || selectedCommissions.length === 0}>
-              {payoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {payoutLoading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
               Create Payout ({selectedCommissions.length})
             </Button>
           </DialogFooter>
@@ -766,10 +768,10 @@ export default function PartnerDetailPage() {
 
           {editingPayout && (
             <>
-              <div className="rounded-lg bg-muted/50 p-4">
-                <p className="text-sm text-muted-foreground">Payout Amount</p>
-                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(editingPayout.amountCents)}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-muted-foreground text-sm">Payout Amount</p>
+                <p className="font-bold text-emerald-600 text-2xl">{formatCurrency(editingPayout.amountCents)}</p>
+                <p className="mt-1 text-muted-foreground text-xs">
                   {editingPayout.commissionCount} commissions · Created {formatDate(editingPayout.createdAt)}
                 </p>
               </div>
@@ -787,7 +789,7 @@ export default function PartnerDetailPage() {
                     <SelectItem value="FAILED">Failed \u2014 Payment failed</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {newStatus === 'COMPLETED' && 'Affiliate will be notified of payment completion'}
                   {newStatus === 'PROCESSING' && 'Payout is being processed'}
                   {newStatus === 'FAILED' && 'Payment failed, may need manual intervention'}
@@ -802,7 +804,7 @@ export default function PartnerDetailPage() {
               Cancel
             </Button>
             <Button onClick={handleUpdatePayoutStatus} disabled={payoutLoading}>
-              {payoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {payoutLoading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
               Update Status
             </Button>
           </DialogFooter>
@@ -816,35 +818,35 @@ function DetailSkeleton() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Skeleton className="h-14 w-14 rounded-full" />
+        <Skeleton className="rounded-full w-14 h-14" />
         <div>
-          <Skeleton className="h-7 w-48 mb-1" />
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="mb-1 w-48 h-7" />
+          <Skeleton className="w-32 h-4" />
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-lg" />
+                <Skeleton className="rounded-lg w-10 h-10" />
                 <div>
-                  <Skeleton className="h-7 w-20 mb-1" />
-                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="mb-1 w-20 h-7" />
+                  <Skeleton className="w-16 h-3" />
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-      <Skeleton className="h-10 w-96" />
+      <Skeleton className="w-96 h-10" />
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-32" />
+              <div key={i} className="flex justify-between items-center">
+                <Skeleton className="w-24 h-4" />
+                <Skeleton className="w-32 h-4" />
               </div>
             ))}
           </div>

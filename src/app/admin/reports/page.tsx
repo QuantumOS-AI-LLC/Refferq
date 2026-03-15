@@ -67,6 +67,7 @@ import {
   Save,
   Layers,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 // ────────────────────────────────────────────────
 //  Types
@@ -144,6 +145,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [tableRows, setTableRows] = useState<Record<string, unknown>[]>([]);
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
 
   // ── Scheduled Reports ──
   const [scheduled, setScheduled] = useState<ScheduledReport[]>([]);
@@ -205,6 +207,7 @@ export default function ReportsPage() {
       }
       const json = await res.json();
       if (json.success) {
+        setCurrencySymbol(json.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
         setData(json.report || json);
         if (json.report) {
           const report = json.report;
@@ -397,13 +400,13 @@ export default function ReportsPage() {
     if (!data) return null;
     const entries = Object.entries(data).filter(([key]) => !['type', 'generatedAt', 'dateRange', 'period'].includes(key));
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3">
         {entries.map(([key, value]) => {
           if (typeof value === 'object' && value !== null) {
             return (
               <Card key={key}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</CardTitle>
+                  <CardTitle className="font-medium text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-1">
@@ -413,7 +416,7 @@ export default function ReportsPage() {
                         <span className="font-medium">
                           {typeof v === 'number'
                             ? k.toLowerCase().includes('cents')
-                              ? `₹${(v / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                              ? formatCurrencyCents(v, currencySymbol, 'en-IN')
                               : v.toLocaleString()
                             : String(v)}
                         </span>
@@ -427,13 +430,13 @@ export default function ReportsPage() {
           return (
             <Card key={key}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</CardTitle>
+                <CardTitle className="font-medium text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">
+                <p className="font-bold text-2xl">
                   {typeof value === 'number'
                     ? key.toLowerCase().includes('cents')
-                      ? `₹${(value / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                      ? formatCurrencyCents(value, currencySymbol, 'en-IN')
                       : value.toLocaleString()
                     : String(value)}
                 </p>
@@ -449,7 +452,7 @@ export default function ReportsPage() {
     if (tableRows.length === 0) return null;
     const columns = Object.keys(tableRows[0]);
     return (
-      <div className="rounded-md border overflow-x-auto">
+      <div className="border rounded-md overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -468,7 +471,7 @@ export default function ReportsPage() {
                   let display: string;
                   if (val === null || val === undefined) display = '—';
                   else if (typeof val === 'number' && col.toLowerCase().includes('cents'))
-                    display = `₹${(val / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+                    display = formatCurrencyCents(val, currencySymbol, 'en-IN');
                   else if (typeof val === 'number') display = val.toLocaleString();
                   else display = String(val);
                   return <TableCell key={col} className="text-sm whitespace-nowrap">{display}</TableCell>;
@@ -491,56 +494,56 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+        <h1 className="font-bold text-2xl tracking-tight">Reports</h1>
         <p className="text-muted-foreground">Generate, schedule, and deliver program reports</p>
       </div>
 
       <Tabs defaultValue="generate" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="generate" className="gap-2"><BarChart3 className="h-4 w-4" />Generate</TabsTrigger>
-          <TabsTrigger value="scheduled" className="gap-2"><Clock className="h-4 w-4" />Scheduled</TabsTrigger>
-          <TabsTrigger value="saved" className="gap-2"><Layers className="h-4 w-4" />Saved</TabsTrigger>
-          <TabsTrigger value="cohort" className="gap-2"><TrendingUp className="h-4 w-4" />Cohort</TabsTrigger>
+          <TabsTrigger value="generate" className="gap-2"><BarChart3 className="w-4 h-4" />Generate</TabsTrigger>
+          <TabsTrigger value="scheduled" className="gap-2"><Clock className="w-4 h-4" />Scheduled</TabsTrigger>
+          <TabsTrigger value="saved" className="gap-2"><Layers className="w-4 h-4" />Saved</TabsTrigger>
+          <TabsTrigger value="cohort" className="gap-2"><TrendingUp className="w-4 h-4" />Cohort</TabsTrigger>
         </TabsList>
 
         {/* ═══════ TAB: Generate ═══════ */}
         <TabsContent value="generate" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Generate Report</CardTitle>
+              <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" />Generate Report</CardTitle>
               <CardDescription>Select a report type and date range</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Type pills */}
               <div>
-                <Label className="mb-2 block">Report Type</Label>
+                <Label className="block mb-2">Report Type</Label>
                 <div className="flex flex-wrap gap-2">
                   {reportTypes.map((rt) => {
                     const Icon = rt.icon;
                     return (
                       <Button key={rt.value} variant={reportType === rt.value ? 'default' : 'outline'} size="sm"
                         onClick={() => { setReportType(rt.value); setData(null); setTableRows([]); }} className="gap-2">
-                        <Icon className="h-4 w-4" />{rt.label}
+                        <Icon className="w-4 h-4" />{rt.label}
                       </Button>
                     );
                   })}
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{reportTypes.find((r) => r.value === reportType)?.description}</p>
+                <p className="mt-1 text-muted-foreground text-xs">{reportTypes.find((r) => r.value === reportType)?.description}</p>
               </div>
 
               {/* Date range */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="grid gap-2">
+              <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-4">
+                <div className="gap-2 grid">
                   <Label>Start Date</Label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Calendar className="top-2.5 left-3 absolute w-4 h-4 text-muted-foreground" />
                     <Input type="date" className="pl-9" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                   </div>
                 </div>
-                <div className="grid gap-2">
+                <div className="gap-2 grid">
                   <Label>End Date</Label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Calendar className="top-2.5 left-3 absolute w-4 h-4 text-muted-foreground" />
                     <Input type="date" className="pl-9" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   </div>
                 </div>
@@ -549,14 +552,14 @@ export default function ReportsPage() {
               {/* Actions */}
               <div className="flex flex-wrap gap-3">
                 <Button onClick={() => fetchReport('json')} disabled={loading}>
-                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</> : <><BarChart3 className="mr-2 h-4 w-4" />Generate</>}
+                  {loading ? <><Loader2 className="mr-2 w-4 h-4 animate-spin" />Generating...</> : <><BarChart3 className="mr-2 w-4 h-4" />Generate</>}
                 </Button>
                 <Button variant="outline" onClick={() => fetchReport('csv')} disabled={loading}>
-                  <Download className="mr-2 h-4 w-4" />Export CSV
+                  <Download className="mr-2 w-4 h-4" />Export CSV
                 </Button>
                 <Dialog open={emailDialog} onOpenChange={setEmailDialog}>
                   <DialogTrigger asChild>
-                    <Button variant="outline"><Mail className="mr-2 h-4 w-4" />Email Report</Button>
+                    <Button variant="outline"><Mail className="mr-2 w-4 h-4" />Email Report</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -564,11 +567,11 @@ export default function ReportsPage() {
                       <DialogDescription>Send the current report type to one or more recipients</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                      <div className="grid gap-2">
+                      <div className="gap-2 grid">
                         <Label>Report</Label>
                         <Input value={reportTypes.find((r) => r.value === reportType)?.label || reportType} readOnly disabled />
                       </div>
-                      <div className="grid gap-2">
+                      <div className="gap-2 grid">
                         <Label>Recipients (comma-separated emails)</Label>
                         <Textarea placeholder="admin@company.com, cfo@company.com" value={emailRecipients} onChange={(e) => setEmailRecipients(e.target.value)} rows={3} />
                       </div>
@@ -576,7 +579,7 @@ export default function ReportsPage() {
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setEmailDialog(false)}>Cancel</Button>
                       <Button onClick={handleSendEmail} disabled={sendingEmail || !emailRecipients.trim()}>
-                        {emailSent ? <><CheckCircle2 className="mr-2 h-4 w-4" />Sent!</> : sendingEmail ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</> : <><Send className="mr-2 h-4 w-4" />Send</>}
+                        {emailSent ? <><CheckCircle2 className="mr-2 w-4 h-4" />Sent!</> : sendingEmail ? <><Loader2 className="mr-2 w-4 h-4 animate-spin" />Sending...</> : <><Send className="mr-2 w-4 h-4" />Send</>}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -584,7 +587,7 @@ export default function ReportsPage() {
                 {tableRows.length > 0 && (
                   <Dialog open={saveDialog} onOpenChange={setSaveDialog}>
                     <DialogTrigger asChild>
-                      <Button variant="outline"><Save className="mr-2 h-4 w-4" />Save Report</Button>
+                      <Button variant="outline"><Save className="mr-2 w-4 h-4" />Save Report</Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
@@ -592,11 +595,11 @@ export default function ReportsPage() {
                         <DialogDescription>Save this report for quick access later</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
-                        <div className="grid gap-2">
+                        <div className="gap-2 grid">
                           <Label>Name</Label>
                           <Input placeholder="e.g., Monthly Affiliate Performance" value={saveForm.name} onChange={(e: any) => setSaveForm({ ...saveForm, name: e.target.value })} />
                         </div>
-                        <div className="grid gap-2">
+                        <div className="gap-2 grid">
                           <Label>Description (optional)</Label>
                           <Input placeholder="Brief description" value={saveForm.description} onChange={(e: any) => setSaveForm({ ...saveForm, description: e.target.value })} />
                         </div>
@@ -624,10 +627,10 @@ export default function ReportsPage() {
               <CardContent>
                 {reportType === 'summary' ? renderSummary() : renderTable()}
                 {reportType !== 'summary' && tableRows.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <BarChart3 className="h-12 w-12 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-lg font-semibold">No data</h3>
-                    <p className="text-sm text-muted-foreground">No records found for the selected criteria</p>
+                  <div className="flex flex-col justify-center items-center py-12 text-center">
+                    <BarChart3 className="w-12 h-12 text-muted-foreground/50" />
+                    <h3 className="mt-4 font-semibold text-lg">No data</h3>
+                    <p className="text-muted-foreground text-sm">No records found for the selected criteria</p>
                   </div>
                 )}
               </CardContent>
@@ -639,15 +642,15 @@ export default function ReportsPage() {
         <TabsContent value="scheduled" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" />Scheduled Reports</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Clock className="w-5 h-5" />Scheduled Reports</CardTitle>
                   <CardDescription>Automated reports delivered on a recurring schedule</CardDescription>
                 </div>
                 <Dialog open={schedDialog} onOpenChange={setSchedDialog}>
                   <DialogTrigger asChild>
                     <Button onClick={() => { setEditingSched(null); setSchedForm({ name: '', reportType: 'summary', frequency: 'WEEKLY', recipients: '', format: 'csv' }); }}>
-                      <Plus className="mr-2 h-4 w-4" />New Schedule
+                      <Plus className="mr-2 w-4 h-4" />New Schedule
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -656,12 +659,12 @@ export default function ReportsPage() {
                       <DialogDescription>Configure automated report delivery</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                      <div className="grid gap-2">
+                      <div className="gap-2 grid">
                         <Label>Name</Label>
                         <Input placeholder="e.g., Weekly Performance Summary" value={schedForm.name} onChange={(e) => setSchedForm({ ...schedForm, name: e.target.value })} />
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="grid gap-2">
+                      <div className="gap-4 grid md:grid-cols-2">
+                        <div className="gap-2 grid">
                           <Label>Report Type</Label>
                           <Select value={schedForm.reportType} onValueChange={(v) => setSchedForm({ ...schedForm, reportType: v })}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -670,7 +673,7 @@ export default function ReportsPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="grid gap-2">
+                        <div className="gap-2 grid">
                           <Label>Frequency</Label>
                           <Select value={schedForm.frequency} onValueChange={(v) => setSchedForm({ ...schedForm, frequency: v })}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -683,11 +686,11 @@ export default function ReportsPage() {
                           </Select>
                         </div>
                       </div>
-                      <div className="grid gap-2">
+                      <div className="gap-2 grid">
                         <Label>Recipients (comma-separated emails)</Label>
                         <Textarea placeholder="admin@company.com, manager@company.com" value={schedForm.recipients} onChange={(e) => setSchedForm({ ...schedForm, recipients: e.target.value })} rows={2} />
                       </div>
-                      <div className="grid gap-2">
+                      <div className="gap-2 grid">
                         <Label>Format</Label>
                         <Select value={schedForm.format} onValueChange={(v) => setSchedForm({ ...schedForm, format: v })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -712,10 +715,10 @@ export default function ReportsPage() {
               {scheduledLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}</div>
               ) : scheduled.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Clock className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">No scheduled reports</h3>
-                  <p className="text-sm text-muted-foreground">Set up automated report delivery</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <Clock className="w-12 h-12 text-muted-foreground/50" />
+                  <h3 className="mt-4 font-semibold text-lg">No scheduled reports</h3>
+                  <p className="text-muted-foreground text-sm">Set up automated report delivery</p>
                 </div>
               ) : (
                 <Table>
@@ -736,8 +739,8 @@ export default function ReportsPage() {
                         <TableCell className="font-medium">{s.name}</TableCell>
                         <TableCell><Badge variant="outline">{s.reportType}</Badge></TableCell>
                         <TableCell className="text-sm">{s.frequency}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{(s.recipients as string[]).length} recipient(s)</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">{(s.recipients as string[]).length} recipient(s)</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
                           {s.nextRunAt ? new Date(s.nextRunAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}
                         </TableCell>
                         <TableCell><Switch checked={s.isActive} onCheckedChange={() => handleToggleScheduled(s.id, s.isActive)} /></TableCell>
@@ -753,9 +756,9 @@ export default function ReportsPage() {
                                 format: s.format,
                               });
                               setSchedDialog(true);
-                            }}><Pencil className="h-4 w-4" /></Button>
+                            }}><Pencil className="w-4 h-4" /></Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteScheduled(s.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>
                         </TableCell>
@@ -772,17 +775,17 @@ export default function ReportsPage() {
         <TabsContent value="saved" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Layers className="h-5 w-5" />Saved Reports</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Layers className="w-5 h-5" />Saved Reports</CardTitle>
               <CardDescription>Your saved report configurations for quick access</CardDescription>
             </CardHeader>
             <CardContent>
               {savedLoading ? (
                 <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}</div>
               ) : saved.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Layers className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">No saved reports</h3>
-                  <p className="text-sm text-muted-foreground">Generate a report and click &quot;Save Report&quot; to save it here</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <Layers className="w-12 h-12 text-muted-foreground/50" />
+                  <h3 className="mt-4 font-semibold text-lg">No saved reports</h3>
+                  <p className="text-muted-foreground text-sm">Generate a report and click &quot;Save Report&quot; to save it here</p>
                 </div>
               ) : (
                 <Table>
@@ -800,17 +803,17 @@ export default function ReportsPage() {
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">{r.name}</TableCell>
                         <TableCell><Badge variant="outline">{r.reportType}</Badge></TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{r.description || '—'}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="max-w-[200px] text-muted-foreground text-sm truncate">{r.description || '—'}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
                           {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             <Button variant="ghost" size="sm" onClick={() => handleLoadSaved(r)}>
-                              <Play className="mr-1 h-3.5 w-3.5" />Run
+                              <Play className="mr-1 w-3.5 h-3.5" />Run
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteSaved(r.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>
                         </TableCell>
@@ -827,9 +830,9 @@ export default function ReportsPage() {
         <TabsContent value="cohort" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" />Cohort Analysis</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5" />Cohort Analysis</CardTitle>
                   <CardDescription>Analyze affiliate behavior and retention by join date</CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -849,7 +852,7 @@ export default function ReportsPage() {
                     </SelectContent>
                   </Select>
                   <Button onClick={fetchCohort} disabled={cohortLoading}>
-                    {cohortLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BarChart3 className="mr-2 h-4 w-4" />}
+                    {cohortLoading ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <BarChart3 className="mr-2 w-4 h-4" />}
                     Analyze
                   </Button>
                 </div>
@@ -859,27 +862,27 @@ export default function ReportsPage() {
               {cohort ? (
                 <div className="space-y-6">
                   {/* Summary Cards */}
-                  <div className="grid gap-4 md:grid-cols-4">
+                  <div className="gap-4 grid md:grid-cols-4">
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Cohorts</CardTitle></CardHeader>
-                      <CardContent><div className="text-2xl font-bold">{cohort.summary.totalCohorts}</div></CardContent>
+                      <CardHeader className="pb-2"><CardTitle className="font-medium text-sm">Total Cohorts</CardTitle></CardHeader>
+                      <CardContent><div className="font-bold text-2xl">{cohort.summary.totalCohorts}</div></CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Affiliates</CardTitle></CardHeader>
-                      <CardContent><div className="text-2xl font-bold">{cohort.summary.totalAffiliates}</div></CardContent>
+                      <CardHeader className="pb-2"><CardTitle className="font-medium text-sm">Total Affiliates</CardTitle></CardHeader>
+                      <CardContent><div className="font-bold text-2xl">{cohort.summary.totalAffiliates}</div></CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Active Affiliates</CardTitle></CardHeader>
-                      <CardContent><div className="text-2xl font-bold">{cohort.summary.activeAffiliates}</div></CardContent>
+                      <CardHeader className="pb-2"><CardTitle className="font-medium text-sm">Active Affiliates</CardTitle></CardHeader>
+                      <CardContent><div className="font-bold text-2xl">{cohort.summary.activeAffiliates}</div></CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Activation Rate</CardTitle></CardHeader>
-                      <CardContent><div className="text-2xl font-bold">{cohort.summary.activationRate}%</div></CardContent>
+                      <CardHeader className="pb-2"><CardTitle className="font-medium text-sm">Activation Rate</CardTitle></CardHeader>
+                      <CardContent><div className="font-bold text-2xl">{cohort.summary.activationRate}%</div></CardContent>
                     </Card>
                   </div>
 
                   {/* Cohort Table */}
-                  <div className="rounded-md border overflow-x-auto">
+                  <div className="border rounded-md overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -902,11 +905,11 @@ export default function ReportsPage() {
                             <TableCell className="text-right">{c.approvedReferrals}</TableCell>
                             <TableCell className="text-right">{c.conversionRate}%</TableCell>
                             <TableCell className="text-right">{c.totalCommissions}</TableCell>
-                            <TableCell className="text-right font-medium">
-                              ₹{(c.totalEarningsCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            <TableCell className="font-medium text-right">
+                              {formatCurrencyCents(c.totalEarningsCents, currencySymbol, 'en-IN')}
                             </TableCell>
-                            <TableCell className="text-right text-muted-foreground">
-                              ₹{(c.avgEarningsPerAffiliateCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            <TableCell className="text-muted-foreground text-right">
+                              {formatCurrencyCents(c.avgEarningsPerAffiliateCents, currencySymbol, 'en-IN')}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -915,10 +918,10 @@ export default function ReportsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <TrendingUp className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">Run cohort analysis</h3>
-                  <p className="text-sm text-muted-foreground">Select a period and grouping, then click Analyze</p>
+                <div className="flex flex-col justify-center items-center py-12 text-center">
+                  <TrendingUp className="w-12 h-12 text-muted-foreground/50" />
+                  <h3 className="mt-4 font-semibold text-lg">Run cohort analysis</h3>
+                  <p className="text-muted-foreground text-sm">Select a period and grouping, then click Analyze</p>
                 </div>
               )}
             </CardContent>
@@ -933,18 +936,18 @@ function ReportsSkeleton() {
   return (
     <div className="space-y-6">
       <div>
-        <Skeleton className="h-7 w-36 mb-1" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="mb-1 w-36 h-7" />
+        <Skeleton className="w-64 h-4" />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="w-24 h-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="w-32 h-8" />
             </CardContent>
           </Card>
         ))}
@@ -952,13 +955,13 @@ function ReportsSkeleton() {
 
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64" />
+          <Skeleton className="w-48 h-6" />
+          <Skeleton className="w-64 h-4" />
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-64 w-full" />
+            <Skeleton className="w-full h-10" />
+            <Skeleton className="w-full h-64" />
           </div>
         </CardContent>
       </Card>

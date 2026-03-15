@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySymbol } from '@/lib/currency';
 
 
 export async function GET(request: NextRequest) {
@@ -213,9 +214,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const currencySymbol = await getCurrencySymbol();
+
     return NextResponse.json({
       success: true,
-      report: reportData
+      report: reportData,
+      currencySymbol,
     });
 
   } catch (error) {

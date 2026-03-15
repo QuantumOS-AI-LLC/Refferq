@@ -22,6 +22,7 @@ import {
 import {
   Ticket, Plus, Pencil, Trash2, Copy, Check,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyValue } from '@/lib/currency-format';
 
 interface Coupon {
   id: string;
@@ -45,6 +46,7 @@ export default function CouponsPage() {
   const [editing, setEditing] = useState<Coupon | null>(null);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [form, setForm] = useState({
     code: '', description: '', discountType: 'PERCENTAGE', discountValue: '',
     maxUses: '', affiliateId: '', expiresAt: '',
@@ -56,7 +58,10 @@ export default function CouponsPage() {
     try {
       const res = await fetch('/api/admin/coupons');
       const data = await res.json();
-      if (data.success) setCoupons(data.coupons || []);
+      if (data.success) {
+        setCoupons(data.coupons || []);
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
+      }
     } catch (error) {
       console.error('Failed to fetch coupons:', error);
     } finally {
@@ -151,8 +156,8 @@ export default function CouponsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24" />)}</div>
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24" />)}</div>
         <Skeleton className="h-96" />
       </div>
     );
@@ -166,38 +171,38 @@ export default function CouponsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Coupons</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Coupons</h1>
           <p className="text-muted-foreground">Manage discount codes and double-sided rewards</p>
         </div>
         <Button onClick={() => { closeDialog(); setDialogOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 w-4 h-4" />
           Create Coupon
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="gap-4 grid md:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Coupons</CardTitle>
-            <Ticket className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Coupons</CardTitle>
+            <Ticket className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.total}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{stats.total}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <Ticket className="h-4 w-4 text-green-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Active</CardTitle>
+            <Ticket className="w-4 h-4 text-green-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.active}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{stats.active}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Redemptions</CardTitle>
-            <Ticket className="h-4 w-4 text-blue-500" />
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
+            <CardTitle className="font-medium text-sm">Total Redemptions</CardTitle>
+            <Ticket className="w-4 h-4 text-blue-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.totalUses}</div></CardContent>
+          <CardContent><div className="font-bold text-2xl">{stats.totalUses}</div></CardContent>
         </Card>
       </div>
 
@@ -208,10 +213,10 @@ export default function CouponsPage() {
         </CardHeader>
         <CardContent>
           {coupons.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Ticket className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No coupons yet</h3>
-              <p className="text-sm text-muted-foreground">Create your first discount code</p>
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <Ticket className="w-12 h-12 text-muted-foreground/50" />
+              <h3 className="mt-4 font-semibold text-lg">No coupons yet</h3>
+              <p className="text-muted-foreground text-sm">Create your first discount code</p>
             </div>
           ) : (
             <Table>
@@ -231,27 +236,27 @@ export default function CouponsPage() {
                   <TableRow key={c.id}>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        <code className="rounded bg-muted px-2 py-0.5 text-sm font-mono">{c.code}</code>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyCode(c.code)}>
-                          {copied === c.code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        <code className="bg-muted px-2 py-0.5 rounded font-mono text-sm">{c.code}</code>
+                        <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => copyCode(c.code)}>
+                          {copied === c.code ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                         </Button>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {c.discountType === 'PERCENTAGE' ? `${c.discountValue}%` : `₹${c.discountValue}`}
+                        {c.discountType === 'PERCENTAGE' ? `${c.discountValue}%` : formatCurrencyValue(c.discountValue, currencySymbol, 'en-IN', 0, 2)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{c.usedCount}{c.maxUses ? `/${c.maxUses}` : ''}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{c.affiliateId ? c.affiliateId.slice(0, 8) + '...' : 'Program-wide'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{c.expiresAt ? formatDate(c.expiresAt) : 'Never'}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{c.expiresAt ? formatDate(c.expiresAt) : 'Never'}</TableCell>
                     <TableCell>
                       <Switch checked={c.isActive} onCheckedChange={() => handleToggle(c.id, c.isActive)} />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -270,42 +275,42 @@ export default function CouponsPage() {
               {editing ? 'Update coupon details' : 'Create a new discount code for affiliates or customers'}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
+          <div className="gap-4 grid py-4">
+            <div className="gap-2 grid">
               <Label>Coupon Code *</Label>
               <Input value={form.code} onChange={e => setForm({...form, code: e.target.value.toUpperCase()})} placeholder="SAVE20" className="font-mono" />
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label>Description</Label>
               <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="20% off for new customers" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
+            <div className="gap-4 grid grid-cols-2">
+              <div className="gap-2 grid">
                 <Label>Discount Type</Label>
                 <Select value={form.discountType} onValueChange={v => setForm({...form, discountType: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
-                    <SelectItem value="FIXED">Fixed Amount (₹)</SelectItem>
+                    <SelectItem value="FIXED">Fixed Amount ({currencySymbol})</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
+              <div className="gap-2 grid">
                 <Label>Discount Value *</Label>
                 <Input type="number" value={form.discountValue} onChange={e => setForm({...form, discountValue: e.target.value})} placeholder="20" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
+            <div className="gap-4 grid grid-cols-2">
+              <div className="gap-2 grid">
                 <Label>Max Uses</Label>
                 <Input type="number" value={form.maxUses} onChange={e => setForm({...form, maxUses: e.target.value})} placeholder="Unlimited" />
               </div>
-              <div className="grid gap-2">
+              <div className="gap-2 grid">
                 <Label>Expires At</Label>
                 <Input type="date" value={form.expiresAt} onChange={e => setForm({...form, expiresAt: e.target.value})} />
               </div>
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label>Affiliate ID (optional)</Label>
               <Input value={form.affiliateId} onChange={e => setForm({...form, affiliateId: e.target.value})} placeholder="Leave empty for program-wide coupon" />
             </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySymbol } from '@/lib/currency';
 
 export async function POST(request: NextRequest) {
   try {
@@ -130,9 +131,12 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    const currencySymbol = await getCurrencySymbol();
+
     return NextResponse.json({
       success: true,
       referrals: mappedReferrals,
+      currencySymbol,
     });
   } catch (error) {
     console.error('Get referrals API error:', error);

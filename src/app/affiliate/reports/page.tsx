@@ -28,13 +28,14 @@ import {
 } from '@/components/ui/table';
 import {
   BarChart3,
-  IndianRupee,
   TrendingUp,
   Target,
   Users,
   Download,
   Calendar,
+  Wallet,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 interface ReportStats {
   totalEarnings: number;
@@ -63,6 +64,7 @@ export default function ReportsPage() {
     conversionRate: 0,
   });
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
 
   useEffect(() => {
     if (!authLoading && user) fetchReportData();
@@ -74,6 +76,7 @@ export default function ReportsPage() {
       const res = await fetch('/api/affiliate/profile');
       const data = await res.json();
       if (data.success) {
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
         const referrals = data.referrals || [];
         const commissions = data.commissions || [];
         const conversions = data.conversions || [];
@@ -135,10 +138,10 @@ export default function ReportsPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    formatCurrencyCents(cents, currencySymbol, 'en-IN');
 
   const exportCSV = () => {
-    const headers = ['Month', 'Referrals', 'Conversions', 'Earnings (₹)'];
+    const headers = ['Month', 'Referrals', 'Conversions', `Earnings (${currencySymbol})`];
     const rows = monthlyData.map((m) => [m.month, m.referrals, m.conversions, (m.earnings / 100).toFixed(2)]);
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -154,8 +157,8 @@ export default function ReportsPage() {
   if (authLoading || loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
         </div>
         <Skeleton className="h-64" />
@@ -165,15 +168,15 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Reports</h1>
           <p className="text-muted-foreground">Analyze your affiliate performance</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[150px]">
-              <Calendar className="mr-2 h-4 w-4" />
+              <Calendar className="mr-2 w-4 h-4" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -183,23 +186,23 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={exportCSV} className="gap-1.5">
-            <Download className="h-4 w-4" />
+            <Download className="w-4 h-4" />
             Export
           </Button>
         </div>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <IndianRupee className="h-4 w-4 text-emerald-600" />
+              <div className="flex justify-center items-center bg-emerald-500/10 rounded-lg w-10 h-10">
+                <Wallet className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalEarnings)}</p>
-                <p className="text-xs text-muted-foreground">Total Earnings</p>
+                <p className="font-bold text-emerald-600 text-2xl">{formatCurrency(stats.totalEarnings)}</p>
+                <p className="text-muted-foreground text-xs">Total Earnings</p>
               </div>
             </div>
           </CardContent>
@@ -207,12 +210,12 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                <Target className="h-4 w-4 text-blue-600" />
+              <div className="flex justify-center items-center bg-blue-500/10 rounded-lg w-10 h-10">
+                <Target className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalLeads}</p>
-                <p className="text-xs text-muted-foreground">Total Leads</p>
+                <p className="font-bold text-2xl">{stats.totalLeads}</p>
+                <p className="text-muted-foreground text-xs">Total Leads</p>
               </div>
             </div>
           </CardContent>
@@ -220,12 +223,12 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                <Users className="h-4 w-4 text-violet-600" />
+              <div className="flex justify-center items-center bg-violet-500/10 rounded-lg w-10 h-10">
+                <Users className="w-4 h-4 text-violet-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalConversions}</p>
-                <p className="text-xs text-muted-foreground">Conversions</p>
+                <p className="font-bold text-2xl">{stats.totalConversions}</p>
+                <p className="text-muted-foreground text-xs">Conversions</p>
               </div>
             </div>
           </CardContent>
@@ -233,12 +236,12 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <TrendingUp className="h-4 w-4 text-amber-600" />
+              <div className="flex justify-center items-center bg-amber-500/10 rounded-lg w-10 h-10">
+                <TrendingUp className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.conversionRate.toFixed(1)}%</p>
-                <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                <p className="font-bold text-2xl">{stats.conversionRate.toFixed(1)}%</p>
+                <p className="text-muted-foreground text-xs">Conversion Rate</p>
               </div>
             </div>
           </CardContent>
@@ -254,10 +257,10 @@ export default function ReportsPage() {
         <CardContent>
           <div className="flex items-end gap-2 h-48">
             {monthlyData.map((m, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs font-medium">{formatCurrency(m.earnings)}</span>
+              <div key={i} className="flex flex-col flex-1 items-center gap-1">
+                <span className="font-medium text-xs">{formatCurrency(m.earnings)}</span>
                 <div
-                  className="w-full bg-emerald-500 rounded-t-sm min-h-[4px] transition-all"
+                  className="bg-emerald-500 rounded-t-sm w-full min-h-[4px] transition-all"
                   style={{ height: `${Math.max((m.earnings / maxEarnings) * 100, 2)}%` }}
                 />
                 <span className="text-[10px] text-muted-foreground">{m.month.split(' ')[0]}</span>
@@ -288,7 +291,7 @@ export default function ReportsPage() {
                   <TableCell className="font-medium">{m.month}</TableCell>
                   <TableCell className="text-center">{m.referrals}</TableCell>
                   <TableCell className="text-center">{m.conversions}</TableCell>
-                  <TableCell className="text-right font-semibold">{formatCurrency(m.earnings)}</TableCell>
+                  <TableCell className="font-semibold text-right">{formatCurrency(m.earnings)}</TableCell>
                 </TableRow>
               ))}
               <TableRow className="bg-muted/50 font-bold">

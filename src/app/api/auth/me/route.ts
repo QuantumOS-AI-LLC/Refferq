@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jwtVerify } from 'jose';
+import { getCurrencySymbol } from '@/lib/currency';
+
+const JWT_SECRET = new TextEncoder().encode(
+    process.env.JWT_SECRET!
+);
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
-
+    const token = request.cookies.get('auth-token')?.value;
+    if (!token) {
+      throw new Error('No token found');
+    }
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.userId as string;
     // Get user from database to ensure they still exist and get latest data
 
     // Get user from database to ensure they still exist and get latest data
@@ -22,6 +32,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const currencySymbol = await getCurrencySymbol();
+
     return NextResponse.json({
       user: {
         id: user.id,
@@ -30,6 +42,7 @@ export async function GET(request: NextRequest) {
         role: user.role,
         hasAffiliate: !!user.affiliate,
         profilePicture: user.profilePicture,
+        currencySymbol,
       }
     });
 

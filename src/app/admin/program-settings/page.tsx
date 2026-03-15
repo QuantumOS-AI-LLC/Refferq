@@ -61,6 +61,7 @@ import {
   Zap,
   Clock,
 } from 'lucide-react';
+import { getCurrencySymbolForCode } from '@/lib/currency-format';
 
 interface ProgramSettings {
   id: string;
@@ -221,7 +222,7 @@ export default function ProgramSettingsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-56" />
+        <Skeleton className="w-56 h-8" />
         <Skeleton className="h-[400px]" />
         <Skeleton className="h-[300px]" />
       </div>
@@ -230,7 +231,7 @@ export default function ProgramSettingsPage() {
 
   if (!settings) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex justify-center items-center py-20">
         <p className="text-muted-foreground">Failed to load settings</p>
       </div>
     );
@@ -239,17 +240,17 @@ export default function ProgramSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Program Settings</h1>
+        <h1 className="font-bold text-2xl tracking-tight">Program Settings</h1>
         <p className="text-muted-foreground">Configure your affiliate program</p>
       </div>
 
       {/* General Settings */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Settings2 className="h-5 w-5" />
+                <Settings2 className="w-5 h-5" />
                 General Settings
               </CardTitle>
               <CardDescription>Basic program configuration</CardDescription>
@@ -257,21 +258,21 @@ export default function ProgramSettingsPage() {
             <Button onClick={handleSaveSettings} disabled={saving}>
               {saved ? (
                 <>
-                  <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="mr-2 w-4 h-4 text-green-500" />
                   Saved
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 w-4 h-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </>
               )}
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
+        <CardContent className="gap-6 grid">
+          <div className="gap-4 grid md:grid-cols-2">
+            <div className="gap-2 grid">
               <Label htmlFor="productName">Product Name</Label>
               <Input
                 id="productName"
@@ -279,7 +280,7 @@ export default function ProgramSettingsPage() {
                 onChange={(e) => setSettings({ ...settings, productName: e.target.value })}
               />
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label htmlFor="programName">Program Name</Label>
               <Input
                 id="programName"
@@ -288,11 +289,11 @@ export default function ProgramSettingsPage() {
               />
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
+          <div className="gap-4 grid md:grid-cols-2">
+            <div className="gap-2 grid">
               <Label htmlFor="websiteUrl">Website URL</Label>
               <div className="relative">
-                <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Globe className="top-2.5 left-3 absolute w-4 h-4 text-muted-foreground" />
                 <Input
                   id="websiteUrl"
                   className="pl-9"
@@ -301,7 +302,7 @@ export default function ProgramSettingsPage() {
                 />
               </div>
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label htmlFor="portalSubdomain">Portal Subdomain</Label>
               <Input
                 id="portalSubdomain"
@@ -311,8 +312,8 @@ export default function ProgramSettingsPage() {
             </div>
           </div>
           <Separator />
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="grid gap-2">
+          <div className="gap-4 grid md:grid-cols-3">
+            <div className="gap-2 grid">
               <Label htmlFor="currency">Currency</Label>
               <Select
                 value={settings.currency}
@@ -329,7 +330,7 @@ export default function ProgramSettingsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label htmlFor="minimumPayoutThreshold">Min Payout Threshold (cents)</Label>
               <Input
                 id="minimumPayoutThreshold"
@@ -340,7 +341,7 @@ export default function ProgramSettingsPage() {
                 }
               />
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label htmlFor="payoutTerm">Payout Term</Label>
               <Select
                 value={settings.payoutTerm}
@@ -357,10 +358,10 @@ export default function ProgramSettingsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
+            <div className="gap-2 grid">
               <Label htmlFor="commissionHoldDays">Commission Hold Period (Days)</Label>
               <div className="relative">
-                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Clock className="top-2.5 left-3 absolute w-4 h-4 text-muted-foreground" />
                 <Input
                   id="commissionHoldDays"
                   type="number"
@@ -375,8 +376,8 @@ export default function ProgramSettingsPage() {
               <p className="text-[10px] text-muted-foreground">Number of days to hold commissions for refund protection</p>
             </div>
           </div>
-          <div className="rounded-md bg-muted p-3">
-            <p className="text-xs text-muted-foreground">
+          <div className="bg-muted p-3 rounded-md">
+            <p className="text-muted-foreground text-xs">
               Program ID: <span className="font-mono">{settings.programId}</span>
             </p>
           </div>
@@ -386,10 +387,10 @@ export default function ProgramSettingsPage() {
       {/* Commission Rules */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Percent className="h-5 w-5" />
+                <Percent className="w-5 h-5" />
                 Commission Rules
               </CardTitle>
               <CardDescription>Define how commissions are calculated</CardDescription>
@@ -397,7 +398,7 @@ export default function ProgramSettingsPage() {
             <Dialog open={ruleDialog} onOpenChange={setRuleDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" onClick={openCreateRule}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="mr-2 w-4 h-4" />
                   Add Rule
                 </Button>
               </DialogTrigger>
@@ -408,8 +409,8 @@ export default function ProgramSettingsPage() {
                     {editingRule ? 'Update commission rule details' : 'Create a new commission calculation rule'}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
+                <div className="gap-4 grid py-4">
+                  <div className="gap-2 grid">
                     <Label>Rule Name</Label>
                     <Input
                       value={ruleForm.name}
@@ -417,8 +418,8 @@ export default function ProgramSettingsPage() {
                       placeholder="e.g., Standard Commission"
                     />
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
+                  <div className="gap-4 grid md:grid-cols-2">
+                    <div className="gap-2 grid">
                       <Label>Type</Label>
                       <Select value={ruleForm.type} onValueChange={(v) => setRuleForm({ ...ruleForm, type: v })}>
                         <SelectTrigger>
@@ -430,13 +431,13 @@ export default function ProgramSettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid gap-2">
+                    <div className="gap-2 grid">
                       <Label>Value</Label>
                       <div className="relative">
                         {ruleForm.type === 'PERCENTAGE' ? (
-                          <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Percent className="top-2.5 right-3 absolute w-4 h-4 text-muted-foreground" />
                         ) : (
-                          <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <IndianRupee className="top-2.5 left-3 absolute w-4 h-4 text-muted-foreground" />
                         )}
                         <Input
                           type="number"
@@ -468,10 +469,10 @@ export default function ProgramSettingsPage() {
         </CardHeader>
         <CardContent>
           {settings.commissionRules.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Percent className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No commission rules</h3>
-              <p className="text-sm text-muted-foreground">Create your first commission rule to get started</p>
+            <div className="flex flex-col justify-center items-center py-12 text-center">
+              <Percent className="w-12 h-12 text-muted-foreground/50" />
+              <h3 className="mt-4 font-semibold text-lg">No commission rules</h3>
+              <p className="text-muted-foreground text-sm">Create your first commission rule to get started</p>
             </div>
           ) : (
             <Table>
@@ -493,7 +494,7 @@ export default function ProgramSettingsPage() {
                       <Badge variant="outline">{rule.type}</Badge>
                     </TableCell>
                     <TableCell>
-                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `₹${rule.value}`}
+                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `${getCurrencySymbolForCode(settings.currency)}${rule.value}`}
                     </TableCell>
                     <TableCell>
                       {rule.isDefault && <Badge variant="default">Default</Badge>}
@@ -506,10 +507,10 @@ export default function ProgramSettingsPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openEditRule(rule)}>
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteRule(rule.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
@@ -525,7 +526,7 @@ export default function ProgramSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Code2 className="h-5 w-5" />
+            <Code2 className="w-5 h-5" />
             Referral Tracking Widget
           </CardTitle>
           <CardDescription>
@@ -535,8 +536,8 @@ export default function ProgramSettingsPage() {
         <CardContent className="space-y-6">
           {/* Step 1 — website URL reminder */}
           {!settings.websiteUrl && (
-            <div className="rounded-md border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-950">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            <div className="bg-yellow-50 dark:bg-yellow-950 p-4 border border-yellow-300 dark:border-yellow-700 rounded-md">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                 Set your <strong>Website URL</strong> in General Settings above first so the snippet is pre-configured.
               </p>
             </div>
@@ -552,13 +553,13 @@ export default function ProgramSettingsPage() {
             {/* ── Tab: Tracking Script ── */}
             <TabsContent value="script" className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">1. Add this script before <code className="rounded bg-muted px-1.5 py-0.5 text-xs">&lt;/body&gt;</code> on every page</Label>
+                <div className="flex justify-between items-center mb-2">
+                  <Label className="font-medium text-sm">1. Add this script before <code className="bg-muted px-1.5 py-0.5 rounded text-xs">&lt;/body&gt;</code> on every page</Label>
                   <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('script', `<script src="${appUrl}/scripts/refferq-tracker.js" data-api-url="${appUrl}"></script>`)}>
-                    {copiedSnippet === 'script' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
+                    {copiedSnippet === 'script' ? <><CheckCircle2 className="mr-1 w-3.5 h-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 w-3.5 h-3.5" />Copy</>}
                   </Button>
                 </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto">
+                <div className="bg-muted p-4 rounded-md overflow-x-auto font-mono text-sm">
                   <span className="text-blue-600">&lt;script</span>
                   {' '}<span className="text-purple-600">src</span>=<span className="text-green-600">&quot;{appUrl}/scripts/refferq-tracker.js&quot;</span><br />
                   {'  '}<span className="text-purple-600">data-api-url</span>=<span className="text-green-600">&quot;{appUrl}&quot;</span>
@@ -568,12 +569,12 @@ export default function ProgramSettingsPage() {
 
               <Separator />
 
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium flex items-center gap-2"><Zap className="h-4 w-4" />How it works</h4>
-                <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                  <li>A visitor arrives on <strong>{settings.websiteUrl || 'your site'}</strong> via a referral link (e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs">?ref=CODE</code>)</li>
-                  <li>The script automatically detects the <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> parameter and stores a 30-day cookie</li>
-                  <li>When the visitor converts (signup, purchase, etc.), you call <code className="rounded bg-muted px-1 py-0.5 text-xs">Refferq.trackConversion()</code></li>
+              <div className="space-y-3 p-4 border rounded-md">
+                <h4 className="flex items-center gap-2 font-medium text-sm"><Zap className="w-4 h-4" />How it works</h4>
+                <ol className="space-y-2 text-muted-foreground text-sm list-decimal list-inside">
+                  <li>A visitor arrives on <strong>{settings.websiteUrl || 'your site'}</strong> via a referral link (e.g. <code className="bg-muted px-1 py-0.5 rounded text-xs">?ref=CODE</code>)</li>
+                  <li>The script automatically detects the <code className="bg-muted px-1 py-0.5 rounded text-xs">ref</code> parameter and stores a 30-day cookie</li>
+                  <li>When the visitor converts (signup, purchase, etc.), you call <code className="bg-muted px-1 py-0.5 rounded text-xs">Refferq.trackConversion()</code></li>
                   <li>The referral and commission are recorded in your dashboard automatically</li>
                 </ol>
               </div>
@@ -582,13 +583,13 @@ export default function ProgramSettingsPage() {
             {/* ── Tab: Conversion Tracking ── */}
             <TabsContent value="conversion" className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Call this when a visitor completes a conversion event</Label>
+                <div className="flex justify-between items-center mb-2">
+                  <Label className="font-medium text-sm">Call this when a visitor completes a conversion event</Label>
                   <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. paise / cents)\n  currency: '${settings.currency || 'INR'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
-                    {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
+                    {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 w-3.5 h-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 w-3.5 h-3.5" />Copy</>}
                   </Button>
                 </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
+                <div className="bg-muted p-4 rounded-md overflow-x-auto font-mono text-sm whitespace-pre">
                   {`// Track a conversion (e.g. after signup or purchase)
 Refferq.trackConversion({
   email: customer.email,
@@ -603,13 +604,13 @@ Refferq.trackConversion({
               <Separator />
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Other helpers</Label>
+                <div className="flex justify-between items-center mb-2">
+                  <Label className="font-medium text-sm">Other helpers</Label>
                   <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('helpers', `// Get the current referral code (or null)\nconst code = Refferq.getReferralCode();\n\n// Clear the stored referral code\nRefferq.clearReferralCode();`)}>
-                    {copiedSnippet === 'helpers' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
+                    {copiedSnippet === 'helpers' ? <><CheckCircle2 className="mr-1 w-3.5 h-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 w-3.5 h-3.5" />Copy</>}
                   </Button>
                 </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
+                <div className="bg-muted p-4 rounded-md overflow-x-auto font-mono text-sm whitespace-pre">
                   {`// Get the current referral code (or null)
 const code = Refferq.getReferralCode();
 
@@ -621,26 +622,26 @@ Refferq.clearReferralCode();`}
 
             {/* ── Tab: Referral Links ── */}
             <TabsContent value="referral" className="space-y-4">
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium">Referral link format</h4>
-                <p className="text-sm text-muted-foreground">
-                  Affiliates share links to your website with a <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> query parameter.
+              <div className="space-y-3 p-4 border rounded-md">
+                <h4 className="font-medium text-sm">Referral link format</h4>
+                <p className="text-muted-foreground text-sm">
+                  Affiliates share links to your website with a <code className="bg-muted px-1 py-0.5 rounded text-xs">ref</code> query parameter.
                   The tracking script picks this up automatically.
                 </p>
-                <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">
+                <div className="bg-muted p-3 rounded-md font-mono text-sm break-all">
                   {settings.websiteUrl || 'https://yoursite.com'}/<span className="text-blue-600">?ref=</span><span className="text-green-600">PARTNER-CODE</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  The script also recognizes <code className="rounded bg-muted px-1 py-0.5 text-xs">?referral=</code> and <code className="rounded bg-muted px-1 py-0.5 text-xs">?affiliate=</code> parameters.
+                <p className="text-muted-foreground text-xs">
+                  The script also recognizes <code className="bg-muted px-1 py-0.5 rounded text-xs">?referral=</code> and <code className="bg-muted px-1 py-0.5 rounded text-xs">?affiliate=</code> parameters.
                 </p>
               </div>
 
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium">Direct referral route</h4>
-                <p className="text-sm text-muted-foreground">
+              <div className="space-y-3 p-4 border rounded-md">
+                <h4 className="font-medium text-sm">Direct referral route</h4>
+                <p className="text-muted-foreground text-sm">
                   You can also use the built-in redirect route to send visitors through Refferq first:
                 </p>
-                <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">
+                <div className="bg-muted p-3 rounded-md font-mono text-sm break-all">
                   {appUrl}/<span className="text-blue-600">r/</span><span className="text-green-600">PARTNER-CODE</span>
                 </div>
               </div>

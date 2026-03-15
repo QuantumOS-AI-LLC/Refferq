@@ -64,6 +64,7 @@ import {
   UserPlus,
   ArrowUpDown,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL } from '@/lib/currency-format';
 
 interface Partner {
   id: string;
@@ -91,7 +92,7 @@ export default function PartnersPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedPartners, setSelectedPartners] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [sortField, setSortField] = useState<keyof Partner>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -145,7 +146,7 @@ export default function PartnersPage() {
           groupName: '',
         }));
         setPartners(formattedPartners);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
       }
     } catch (error) {
       console.error('Failed to fetch partners:', error);
@@ -327,36 +328,36 @@ export default function PartnersPage() {
   };
 
   const SortIcon = ({ field }: { field: keyof Partner }) => {
-    if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />;
+    if (sortField !== field) return <ArrowUpDown className="opacity-50 ml-1 w-3 h-3" />;
     return sortDirection === 'asc' ? (
-      <ChevronUp className="ml-1 h-3 w-3" />
+      <ChevronUp className="ml-1 w-3 h-3" />
     ) : (
-      <ChevronDown className="ml-1 h-3 w-3" />
+      <ChevronDown className="ml-1 w-3 h-3" />
     );
   };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
+        <div className="flex justify-between items-center">
+          <Skeleton className="w-48 h-8" />
           <div className="flex gap-2">
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-32" />
+            <Skeleton className="w-32 h-9" />
+            <Skeleton className="w-32 h-9" />
           </div>
         </div>
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className="w-full h-10" />
         <Card>
           <CardContent className="pt-6">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-4 py-4">
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-9 w-9 rounded-full" />
+                <Skeleton className="w-4 h-4" />
+                <Skeleton className="rounded-full w-9 h-9" />
                 <div className="flex-1">
-                  <Skeleton className="h-4 w-32 mb-1" />
-                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="mb-1 w-32 h-4" />
+                  <Skeleton className="w-48 h-3" />
                 </div>
-                <Skeleton className="h-5 w-16" />
+                <Skeleton className="w-16 h-5" />
               </div>
             ))}
           </CardContent>
@@ -368,18 +369,18 @@ export default function PartnersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Partners</h2>
+          <h2 className="font-bold text-2xl tracking-tight">Partners</h2>
           <p className="text-muted-foreground">Manage your affiliate partners</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowInviteModal(true)}>
-            <Mail className="mr-2 h-4 w-4" />
+            <Mail className="mr-2 w-4 h-4" />
             Invite
           </Button>
           <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 w-4 h-4" />
             Create Partner
           </Button>
         </div>
@@ -387,7 +388,7 @@ export default function PartnersPage() {
 
       {/* Tabs + Search + Actions */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex justify-between items-center gap-4">
           <TabsList>
             <TabsTrigger value="active">Active ({tabCounts.active})</TabsTrigger>
             <TabsTrigger value="pending">Pending ({tabCounts.pending})</TabsTrigger>
@@ -396,7 +397,7 @@ export default function PartnersPage() {
           </TabsList>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="top-2.5 left-2.5 absolute w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search partners..."
                 value={searchQuery}
@@ -413,16 +414,16 @@ export default function PartnersPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleBulkAction('approve', 'ACTIVE')}>
-                    <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="mr-2 w-4 h-4 text-emerald-600" />
                     Approve Selected
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkAction('reject', 'INACTIVE')}>
-                    <XCircle className="mr-2 h-4 w-4 text-amber-600" />
+                    <XCircle className="mr-2 w-4 h-4 text-amber-600" />
                     Reject Selected
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleBulkAction('delete')} className="text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-2 w-4 h-4" />
                     Delete Selected
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -431,23 +432,23 @@ export default function PartnersPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleExportPartners('all')}>
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="mr-2 w-4 h-4" />
                   Export All (CSV)
                 </DropdownMenuItem>
                 {selectedPartners.length > 0 && (
                   <DropdownMenuItem onClick={() => handleExportPartners('selected')}>
-                    <Download className="mr-2 h-4 w-4" />
+                    <Download className="mr-2 w-4 h-4" />
                     Export Selected (CSV)
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Upload className="mr-2 h-4 w-4" />
+                  <Upload className="mr-2 w-4 h-4" />
                   Import Partners (CSV)
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -483,13 +484,13 @@ export default function PartnersPage() {
                       Customers <SortIcon field="customers" />
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer text-right" onClick={() => handleSort('revenue')}>
-                    <div className="flex items-center justify-end">
+                  <TableHead className="text-right cursor-pointer" onClick={() => handleSort('revenue')}>
+                    <div className="flex justify-end items-center">
                       Revenue <SortIcon field="revenue" />
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer text-right" onClick={() => handleSort('earnings')}>
-                    <div className="flex items-center justify-end">
+                  <TableHead className="text-right cursor-pointer" onClick={() => handleSort('earnings')}>
+                    <div className="flex justify-end items-center">
                       Earnings <SortIcon field="earnings" />
                     </div>
                   </TableHead>
@@ -516,29 +517,29 @@ export default function PartnersPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="w-8 h-8">
                             <AvatarFallback className="bg-primary/10 text-primary text-xs">
                               {partner.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium">{partner.name}</p>
-                            <p className="text-xs text-muted-foreground">{partner.email}</p>
+                            <p className="font-medium text-sm">{partner.name}</p>
+                            <p className="text-muted-foreground text-xs">{partner.email}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{partner.referralCode}</code>
+                        <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{partner.referralCode}</code>
                       </TableCell>
                       <TableCell>{partner.leads}</TableCell>
                       <TableCell>{partner.customers}</TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="font-medium text-right">
                         {currencySymbol}{(partner.revenue / 100).toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="font-medium text-right">
                         {currencySymbol}{(partner.earnings / 100).toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-sm">
                         {new Date(partner.createdAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -550,10 +551,10 @@ export default function PartnersPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8}>
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Users className="h-10 w-10 text-muted-foreground/50 mb-3" />
-                        <p className="text-sm font-medium text-muted-foreground">No partners found</p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                      <div className="flex flex-col justify-center items-center py-12 text-center">
+                        <Users className="mb-3 w-10 h-10 text-muted-foreground/50" />
+                        <p className="font-medium text-muted-foreground text-sm">No partners found</p>
+                        <p className="mt-1 text-muted-foreground text-xs">
                           {searchQuery ? 'Try a different search term' : 'Create or invite partners to get started'}
                         </p>
                       </div>
@@ -574,8 +575,8 @@ export default function PartnersPage() {
             <DialogDescription>Add a new affiliate partner manually</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreatePartner}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="gap-4 grid py-4">
+              <div className="gap-4 grid grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
@@ -613,7 +614,7 @@ export default function PartnersPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPartner({ ...newPartner, company: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="gap-4 grid grid-cols-2">
                 <div className="space-y-2">
                   <Label>Partner Group</Label>
                   <Select
@@ -670,7 +671,7 @@ export default function PartnersPage() {
                 Cancel
               </Button>
               <Button type="submit">
-                <UserPlus className="mr-2 h-4 w-4" />
+                <UserPlus className="mr-2 w-4 h-4" />
                 Create Partner
               </Button>
             </DialogFooter>
@@ -685,7 +686,7 @@ export default function PartnersPage() {
             <DialogTitle>Invite Partner</DialogTitle>
             <DialogDescription>Send an email invitation to a new affiliate partner</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="gap-4 grid py-4">
             <div className="space-y-2">
               <Label htmlFor="inviteEmail">Email Address</Label>
               <Input
@@ -722,7 +723,7 @@ export default function PartnersPage() {
                 setShowInviteModal(false);
               }}
             >
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="mr-2 w-4 h-4" />
               Send Invite
             </Button>
           </DialogFooter>

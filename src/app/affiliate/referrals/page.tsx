@@ -50,6 +50,7 @@ import {
   Filter,
   Download,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyValue } from '@/lib/currency-format';
 
 interface Referral {
   id: string;
@@ -70,6 +71,7 @@ export default function ReferralsPage() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
@@ -85,7 +87,10 @@ export default function ReferralsPage() {
       setLoading(true);
       const res = await fetch('/api/affiliate/referrals');
       const data = await res.json();
-      if (data.success) setReferrals(data.referrals || []);
+      if (data.success) {
+        setReferrals(data.referrals || []);
+        setCurrencySymbol(data.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
+      }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
     } finally {
@@ -139,7 +144,7 @@ export default function ReferralsPage() {
     const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
     return (
       <Badge variant={variant} className="gap-1 text-xs">
-        <Icon className="h-3 w-3" />
+        <Icon className="w-3 h-3" />
         {status}
       </Badge>
     );
@@ -183,8 +188,8 @@ export default function ReferralsPage() {
   if (authLoading || loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
+        <Skeleton className="w-48 h-8" />
+        <div className="gap-4 grid md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
         </div>
         <Skeleton className="h-96" />
@@ -196,55 +201,55 @@ export default function ReferralsPage() {
     <div className="space-y-6">
       {notification && (
         <Alert variant={notification.type === 'error' ? 'destructive' : 'default'}>
-          {notification.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          {notification.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           <AlertDescription>{notification.message}</AlertDescription>
         </Alert>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Referrals</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Referrals</h1>
           <p className="text-muted-foreground">Track and manage your referral submissions</p>
         </div>
         <Button onClick={() => setShowSubmitModal(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" />
+          <Plus className="w-4 h-4" />
           Submit Lead
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total</p>
-            <p className="text-2xl font-bold">{stats.total}</p>
+            <p className="text-muted-foreground text-sm">Total</p>
+            <p className="font-bold text-2xl">{stats.total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Pending</p>
-            <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+            <p className="text-muted-foreground text-sm">Pending</p>
+            <p className="font-bold text-amber-600 text-2xl">{stats.pending}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-emerald-600">{stats.approved}</p>
+            <p className="text-muted-foreground text-sm">Approved</p>
+            <p className="font-bold text-emerald-600 text-2xl">{stats.approved}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Rejected</p>
-            <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+            <p className="text-muted-foreground text-sm">Rejected</p>
+            <p className="font-bold text-red-600 text-2xl">{stats.rejected}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex sm:flex-row flex-col gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
           <Input
             placeholder="Search by name or email..."
             value={searchQuery}
@@ -254,7 +259,7 @@ export default function ReferralsPage() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[160px]">
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className="mr-2 w-4 h-4" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -265,7 +270,7 @@ export default function ReferralsPage() {
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={exportCSV} className="gap-1.5">
-          <Download className="h-4 w-4" />
+          <Download className="w-4 h-4" />
           Export CSV
         </Button>
       </div>
@@ -274,10 +279,10 @@ export default function ReferralsPage() {
       <Card>
         <CardContent className="p-0">
           {filteredReferrals.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Users className="h-12 w-12 text-muted-foreground/40 mb-3" />
+            <div className="flex flex-col justify-center items-center py-16 text-center">
+              <Users className="mb-3 w-12 h-12 text-muted-foreground/40" />
               <p className="font-medium">No referrals found</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-muted-foreground text-sm">
                 {referrals.length === 0 ? 'Start submitting leads to earn commissions' : 'Try adjusting your filters'}
               </p>
               {referrals.length === 0 && (
@@ -304,8 +309,8 @@ export default function ReferralsPage() {
                     <TableCell className="text-muted-foreground">{ref.company || '\u2014'}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {`\u20B9${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
+                    <TableCell className="font-semibold text-right">
+                      {formatCurrencyValue(Number(ref.estimatedValue) || 0, currencySymbol, 'en-IN')}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -345,7 +350,7 @@ export default function ReferralsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Estimated Deal Size (₹) *</Label>
+              <Label>Estimated Deal Size ({currencySymbol}) *</Label>
               <Input
                 type="number"
                 required
@@ -353,12 +358,12 @@ export default function ReferralsPage() {
                 onChange={(e) => setSubmitForm({ ...submitForm, estimatedValue: e.target.value })}
                 placeholder="0"
               />
-              <p className="text-xs text-muted-foreground">Type 0 if unsure</p>
+              <p className="text-muted-foreground text-xs">Type 0 if unsure</p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowSubmitModal(false)}>Cancel</Button>
               <Button type="submit" disabled={submitLoading}>
-                {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {submitLoading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
                 Submit Lead
               </Button>
             </DialogFooter>

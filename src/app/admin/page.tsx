@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/tooltip';
 import {
   TrendingUp,
-  IndianRupee,
   Users,
   Target,
   Clock,
@@ -37,6 +36,7 @@ import {
   Activity,
   Eye,
 } from 'lucide-react';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyCents } from '@/lib/currency-format';
 
 interface DashboardStats {
   totalRevenue: number;
@@ -74,6 +74,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [topAffiliates, setTopAffiliates] = useState<TopAffiliate[]>([]);
   const [recentCustomers, setRecentCustomers] = useState<RecentCustomer[]>([]);
+  const [currencySymbol, setCurrencySymbol] = useState(DEFAULT_CURRENCY_SYMBOL);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function AdminDashboardPage() {
       ]);
 
       if (statsData.success) {
+        setCurrencySymbol(statsData.currencySymbol || DEFAULT_CURRENCY_SYMBOL);
         setStats({
           totalRevenue: statsData.stats.totalRevenue || 0,
           totalEstimatedRevenue: statsData.stats.totalEstimatedRevenue || 0,
@@ -140,8 +142,8 @@ export default function AdminDashboardPage() {
   const statCards = [
     {
       title: 'Estimated Revenue',
-      value: `₹${stats ? (stats.totalEstimatedRevenue / 100).toFixed(2) : '0.00'}`,
-      icon: IndianRupee,
+      value: formatCurrencyCents(stats?.totalEstimatedRevenue || 0, currencySymbol),
+      icon: Wallet,
       description: 'Total projected value',
       trend: '+12%',
       trendUp: true,
@@ -150,7 +152,7 @@ export default function AdminDashboardPage() {
     },
     {
       title: 'Confirmed Revenue',
-      value: `₹${stats ? (stats.totalRevenue / 100).toFixed(2) : '0.00'}`,
+      value: formatCurrencyCents(stats?.totalRevenue || 0, currencySymbol),
       icon: TrendingUp,
       description: 'Approved transactions',
       color: 'text-emerald-600',
@@ -158,7 +160,7 @@ export default function AdminDashboardPage() {
     },
     {
       title: 'Commission Owed',
-      value: `₹${stats ? (stats.totalEstimatedCommission / 100).toFixed(2) : '0.00'}`,
+      value: formatCurrencyCents(stats?.totalEstimatedCommission || 0, currencySymbol),
       icon: Wallet,
       description: 'Pending payouts',
       color: 'text-amber-600',
@@ -220,31 +222,31 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
             Overview of your affiliate program performance
           </p>
         </div>
 
         {/* Primary Stat Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
             <Card key={stat.title} className="relative overflow-hidden">
               <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                <div className="flex justify-between items-center">
+                  <p className="font-medium text-muted-foreground text-sm">{stat.title}</p>
                   <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${stat.bg}`}>
                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                   </div>
                 </div>
                 <div className="mt-2">
-                  <span className="text-2xl font-bold tracking-tight">{stat.value}</span>
+                  <span className="font-bold text-2xl tracking-tight">{stat.value}</span>
                 </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{stat.description}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-muted-foreground text-xs">{stat.description}</span>
                   {stat.trend && (
-                    <Badge variant="secondary" className="h-5 gap-0.5 px-1.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border-0">
-                      <ArrowUpRight className="h-3 w-3" />
+                    <Badge variant="secondary" className="gap-0.5 bg-emerald-50 px-1.5 border-0 h-5 font-semibold text-[10px] text-emerald-700">
+                      <ArrowUpRight className="w-3 h-3" />
                       {stat.trend}
                     </Badge>
                   )}
@@ -255,22 +257,22 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Activity Overview Row */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="gap-4 grid md:grid-cols-3">
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                  <Clock className="h-5 w-5 text-amber-600" />
+                <div className="flex justify-center items-center bg-amber-500/10 rounded-xl w-12 h-12">
+                  <Clock className="w-5 h-5 text-amber-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-2xl font-bold">{stats?.pendingReferrals || 0}</p>
-                  <p className="text-sm text-muted-foreground">Pending Leads</p>
+                  <p className="font-bold text-2xl">{stats?.pendingReferrals || 0}</p>
+                  <p className="text-muted-foreground text-sm">Pending Leads</p>
                 </div>
                 {(stats?.pendingReferrals || 0) > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push('/admin/customers')}>
-                        <Eye className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => router.push('/admin/customers')}>
+                        <Eye className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Review pending</TooltipContent>
@@ -283,12 +285,12 @@ export default function AdminDashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
-                  <Activity className="h-5 w-5 text-blue-600" />
+                <div className="flex justify-center items-center bg-blue-500/10 rounded-xl w-12 h-12">
+                  <Activity className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-2xl font-bold">{stats?.totalLeads || 0}</p>
-                  <p className="text-sm text-muted-foreground">Total Leads</p>
+                  <p className="font-bold text-2xl">{stats?.totalLeads || 0}</p>
+                  <p className="text-muted-foreground text-sm">Total Leads</p>
                 </div>
               </div>
             </CardContent>
@@ -297,32 +299,32 @@ export default function AdminDashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-                  <Target className="h-5 w-5 text-emerald-600" />
+                <div className="flex justify-center items-center bg-emerald-500/10 rounded-xl w-12 h-12">
+                  <Target className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-2xl font-bold">{stats?.totalReferredCustomers || 0}</p>
-                  <p className="text-sm text-muted-foreground">Conversions</p>
+                  <p className="font-bold text-2xl">{stats?.totalReferredCustomers || 0}</p>
+                  <p className="text-muted-foreground text-sm">Conversions</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-medium text-muted-foreground">Rate</p>
-                  <p className="text-sm font-bold text-emerald-600">{conversionRate}%</p>
+                  <p className="font-medium text-muted-foreground text-xs">Rate</p>
+                  <p className="font-bold text-emerald-600 text-sm">{conversionRate}%</p>
                 </div>
               </div>
               <Progress
                 value={parseFloat(conversionRate)}
-                className="mt-3 h-1.5 [&>div]:bg-emerald-500"
+                className="[&>div]:bg-emerald-500 mt-3 h-1.5"
               />
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="gap-3 grid sm:grid-cols-2 lg:grid-cols-4">
           {quickActions.map((action) => (
             <Card
               key={action.title}
-              className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/20"
+              className="group hover:shadow-md hover:border-primary/20 transition-all cursor-pointer"
               onClick={() => router.push(action.href)}
             >
               <CardContent className="flex items-center gap-3 p-4">
@@ -330,27 +332,27 @@ export default function AdminDashboardPage() {
                   <action.icon className={`h-5 w-5 ${action.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">{action.description}</p>
+                  <p className="font-semibold text-sm">{action.title}</p>
+                  <p className="text-muted-foreground text-xs">{action.description}</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                <ArrowRight className="opacity-0 group-hover:opacity-100 w-4 h-4 text-muted-foreground transition-opacity" />
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Data Tables */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="gap-6 grid lg:grid-cols-2">
           {/* Top Partners */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardHeader className="flex flex-row justify-between items-center pb-3">
               <div>
-                <CardTitle className="text-base font-semibold">Top Partners</CardTitle>
+                <CardTitle className="font-semibold text-base">Top Partners</CardTitle>
                 <CardDescription>Best performing affiliates</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/partners')}>
                 View all
-                <ArrowRight className="ml-1 h-3 w-3" />
+                <ArrowRight className="ml-1 w-3 h-3" />
               </Button>
             </CardHeader>
             <Separator />
@@ -360,23 +362,23 @@ export default function AdminDashboardPage() {
                   {topAffiliates.map((affiliate: any, index: number) => (
                     <div
                       key={affiliate.id}
-                      className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50 cursor-pointer"
+                      className="flex items-center gap-3 hover:bg-muted/50 p-2.5 rounded-lg transition-colors cursor-pointer"
                       onClick={() => router.push(`/admin/partners/${affiliate.id}`)}
                     >
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                      <span className="flex justify-center items-center bg-muted rounded-full w-6 h-6 font-bold text-muted-foreground text-xs">
                         {index + 1}
                       </span>
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-primary/10 font-semibold text-primary text-xs">
                           {affiliate.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{affiliate.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{affiliate.referralCode}</p>
+                        <p className="font-medium text-sm truncate">{affiliate.name}</p>
+                        <p className="font-mono text-muted-foreground text-xs">{affiliate.referralCode}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">₹{(affiliate.totalRevenue / 100).toFixed(2)}</p>
+                        <p className="font-semibold text-sm">{formatCurrencyCents(affiliate.totalRevenue, currencySymbol)}</p>
                         <p className="text-[11px] text-muted-foreground">{affiliate.totalReferrals} referrals</p>
                       </div>
                     </div>
@@ -394,14 +396,14 @@ export default function AdminDashboardPage() {
 
           {/* Recent Customers */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardHeader className="flex flex-row justify-between items-center pb-3">
               <div>
-                <CardTitle className="text-base font-semibold">Recent Customers</CardTitle>
+                <CardTitle className="font-semibold text-base">Recent Customers</CardTitle>
                 <CardDescription>Latest referred customers</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/customers')}>
                 View all
-                <ArrowRight className="ml-1 h-3 w-3" />
+                <ArrowRight className="ml-1 w-3 h-3" />
               </Button>
             </CardHeader>
             <Separator />
@@ -411,17 +413,17 @@ export default function AdminDashboardPage() {
                   {recentCustomers.slice(0, 5).map((customer) => (
                     <div
                       key={customer.id}
-                      className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+                      className="flex items-center gap-3 hover:bg-muted/50 p-2.5 rounded-lg transition-colors"
                     >
-                      <p className="text-[11px] text-muted-foreground w-12 shrink-0 text-center">
+                      <p className="w-12 text-[11px] text-muted-foreground text-center shrink-0">
                         {new Date(customer.createdAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                         })}
                       </p>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{customer.leadEmail}</p>
-                        <p className="text-xs text-muted-foreground">via {customer.affiliateName}</p>
+                        <p className="font-medium text-sm truncate">{customer.leadEmail}</p>
+                        <p className="text-muted-foreground text-xs">via {customer.affiliateName}</p>
                       </div>
                       <StatusBadge status={customer.status} />
                     </div>
@@ -451,7 +453,7 @@ function StatusBadge({ status }: { status: string }) {
   const { variant, label } = config[status] || { variant: 'secondary' as const, label: status };
 
   return (
-    <Badge variant={variant} className="text-[10px] font-medium px-2 py-0.5">
+    <Badge variant={variant} className="px-2 py-0.5 font-medium text-[10px]">
       {label}
     </Badge>
   );
@@ -459,12 +461,12 @@ function StatusBadge({ status }: { status: string }) {
 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-        <Icon className="h-5 w-5 text-muted-foreground" />
+    <div className="flex flex-col justify-center items-center py-10 text-center">
+      <div className="flex justify-center items-center bg-muted rounded-xl w-12 h-12">
+        <Icon className="w-5 h-5 text-muted-foreground" />
       </div>
-      <p className="mt-3 text-sm font-medium text-muted-foreground">{title}</p>
-      <p className="mt-1 text-xs text-muted-foreground/70">{description}</p>
+      <p className="mt-3 font-medium text-muted-foreground text-sm">{title}</p>
+      <p className="mt-1 text-muted-foreground/70 text-xs">{description}</p>
     </div>
   );
 }
@@ -473,53 +475,53 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       <div>
-        <Skeleton className="h-7 w-36 mb-1" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="mb-1 w-36 h-7" />
+        <Skeleton className="w-64 h-4" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-9 rounded-lg" />
+              <div className="flex justify-between items-center">
+                <Skeleton className="w-24 h-4" />
+                <Skeleton className="rounded-lg w-9 h-9" />
               </div>
-              <Skeleton className="h-8 w-32 mt-2" />
-              <Skeleton className="h-3 w-20 mt-2" />
+              <Skeleton className="mt-2 w-32 h-8" />
+              <Skeleton className="mt-2 w-20 h-3" />
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="gap-4 grid md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="flex items-center gap-4 p-5">
-              <Skeleton className="h-12 w-12 rounded-xl" />
+              <Skeleton className="rounded-xl w-12 h-12" />
               <div>
-                <Skeleton className="h-7 w-16 mb-1" />
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="mb-1 w-16 h-7" />
+                <Skeleton className="w-24 h-4" />
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="gap-6 grid lg:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
           <Card key={i}>
             <CardHeader>
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-3 w-48" />
+              <Skeleton className="w-32 h-5" />
+              <Skeleton className="w-48 h-3" />
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, j) => (
                   <div key={j} className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="rounded-full w-8 h-8" />
                     <div className="flex-1">
-                      <Skeleton className="h-4 w-32 mb-1" />
-                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="mb-1 w-32 h-4" />
+                      <Skeleton className="w-20 h-3" />
                     </div>
-                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="w-16 h-4" />
                   </div>
                 ))}
               </div>
