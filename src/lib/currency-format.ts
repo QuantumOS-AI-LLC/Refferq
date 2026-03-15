@@ -19,28 +19,44 @@ export function getCurrencySymbolForCode(currency?: string | null): string {
   return CURRENCY_SYMBOLS[currency] || currency;
 }
 
+function normalizeCurrencyNumber(value: number | string | null | undefined): number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+}
+
 export function formatCurrencyValue(
-  amount: number,
-  symbol: string,
+  amount: number | string | null | undefined,
+  symbol?: string | null,
   locale?: string,
   minimumFractionDigits = 2,
   maximumFractionDigits = 2,
 ): string {
-  return `${symbol}${amount.toLocaleString(locale, {
+  const normalizedAmount = normalizeCurrencyNumber(amount);
+  const normalizedSymbol = symbol || DEFAULT_CURRENCY_SYMBOL;
+
+  return `${normalizedSymbol}${normalizedAmount.toLocaleString(locale, {
     minimumFractionDigits,
     maximumFractionDigits,
   })}`;
 }
 
 export function formatCurrencyCents(
-  cents: number,
-  symbol: string,
+  cents: number | string | null | undefined,
+  symbol?: string | null,
   locale?: string,
   minimumFractionDigits = 2,
   maximumFractionDigits = 2,
 ): string {
   return formatCurrencyValue(
-    cents / 100,
+    normalizeCurrencyNumber(cents) / 100,
     symbol,
     locale,
     minimumFractionDigits,
