@@ -15,9 +15,7 @@ node_modules
 /dist
 
 # Environment Variables
-.env
 .env*.local
-.env.production
 
 # Debug
 npm-debug.log*
@@ -55,3 +53,4 @@ logs
 
 # Scripts
 /scripts/
+config.bat
